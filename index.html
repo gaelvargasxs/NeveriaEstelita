@@ -362,6 +362,32 @@
     }
     .btn-whatsapp:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(37,211,102,.45); }
     .btn-whatsapp:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .nombre-input-wrap {
+      margin-bottom: 1rem;
+    }
+    .nombre-input-wrap label {
+      display: block; font-size: .85rem; font-weight: 800;
+      margin-bottom: .4rem; color: var(--texto);
+    }
+    .nombre-input-wrap input {
+      width: 100%; padding: .65rem 1rem;
+      border: 2px solid var(--morado-claro);
+      border-radius: 50px; font-family: 'Nunito', sans-serif;
+      font-size: .9rem; color: var(--texto);
+      outline: none; transition: border-color .2s;
+    }
+    .nombre-input-wrap input:focus { border-color: var(--morado); }
+    .nombre-input-wrap input.error { border-color: var(--rosa); }
+    .nombre-error {
+      display: none; font-size: .75rem;
+      color: var(--rosa); font-weight: 700;
+      margin-top: .3rem; padding-left: .5rem;
+    }
+    .nombre-error.visible { display: block; }
+    .confirmacion-aviso {
+      text-align: center; font-size: .75rem;
+      color: var(--gris); margin-top: .75rem; line-height: 1.5;
+    }
 
     /* =============================================
        NOSOTROS / INFO
@@ -619,18 +645,24 @@
     <!-- ítems renderizados por JS -->
   </div>
   <div class="carrito-footer">
+    <div class="nombre-input-wrap">
+      <label for="cliente-nombre">👤 Tu nombre <span style="color:var(--rosa)">*</span></label>
+      <input type="text" id="cliente-nombre" placeholder="Ej: Carlos, Laura..." maxlength="40"
+        oninput="validarNombre()" />
+      <span class="nombre-error" id="nombre-error">⚠️ Escribe tu nombre para continuar</span>
+    </div>
     <div class="total-row">
       <span class="total-label">Total a pagar:</span>
       <span class="total-monto" id="total-monto">$0</span>
     </div>
     <button class="btn-whatsapp" id="btn-whatsapp" onclick="hacerPedidoWhatsApp()" disabled>
-      <!-- ícono WhatsApp SVG inline -->
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
         <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.117 1.522 5.849L.078 23.903a.5.5 0 0 0 .602.602l6.054-1.444A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.9a9.9 9.9 0 0 1-5.03-1.375l-.36-.214-3.733.891.907-3.618-.235-.373A9.9 9.9 0 0 1 2.1 12C2.1 6.533 6.533 2.1 12 2.1S21.9 6.533 21.9 12 17.467 21.9 12 21.9z"/>
       </svg>
       Hacer pedido por WhatsApp
     </button>
+    <p class="confirmacion-aviso">✅ Tu pedido se preparará hasta recibir confirmación por WhatsApp</p>
   </div>
 </aside>
 
@@ -767,7 +799,7 @@ function actualizarUI() {
   // Total en panel
   document.getElementById('total-monto').textContent  = fmtPrecio;
   // Botón WhatsApp
-  document.getElementById('btn-whatsapp').disabled    = carrito.length === 0;
+  actualizarBotonWhatsApp();
 
   renderCarrito();
 }
@@ -816,22 +848,52 @@ function cerrarCarrito() {
 }
 
 // =============================================
+//  VALIDAR NOMBRE
+// =============================================
+function validarNombre() {
+  const input = document.getElementById('cliente-nombre');
+  const error = document.getElementById('nombre-error');
+  const nombre = input.value.trim();
+  if (nombre.length > 0) {
+    input.classList.remove('error');
+    error.classList.remove('visible');
+  }
+  actualizarBotonWhatsApp();
+}
+
+function actualizarBotonWhatsApp() {
+  const nombre = document.getElementById('cliente-nombre').value.trim();
+  const btn = document.getElementById('btn-whatsapp');
+  btn.disabled = carrito.length === 0 || nombre.length === 0;
+}
+
+// =============================================
 //  PEDIDO POR WHATSAPP
 //  ⚠️ CAMBIA "521XXXXXXXXXX" por tu número real
 //  Formato: código de país + número sin espacios
 //  Ejemplo México: 5216181234567
 // =============================================
-const NUMERO_WHATSAPP = '5218714024914'; // <--- PON TU NÚMERO AQUÍ
+const NUMERO_WHATSAPP = '521XXXXXXXXXX'; // <--- PON TU NÚMERO AQUÍ
 
 function hacerPedidoWhatsApp() {
   if (carrito.length === 0) return;
+  const nombre = document.getElementById('cliente-nombre').value.trim();
+  if (!nombre) {
+    const input = document.getElementById('cliente-nombre');
+    const error = document.getElementById('nombre-error');
+    input.classList.add('error');
+    error.classList.add('visible');
+    input.focus();
+    return;
+  }
 
   const lineasProductos = carrito
     .map(item => `  • ${item.cantidad}x ${item.nombre} — $${item.precio * item.cantidad}`)
     .join('\n');
 
   const mensaje =
-    `¡Hola! 😊 Me gustaría hacer el siguiente pedido en *Nevería Estelita*:\n\n` +
+    `¡Hola! Soy *${nombre}* 👋\n` +
+    `Me gustaría hacer el siguiente pedido en *Nevería Estelita*:\n\n` +
     `${lineasProductos}\n\n` +
     `💰 *Total a pagar: $${totalPrecio()}*\n\n` +
     `¿Pueden confirmarlo? ¡Gracias! 🍦`;
