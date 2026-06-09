@@ -1,1376 +1,926 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Nevería Estelita — POS & Contabilidad</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-
-<!-- =====================================================
-     FIREBASE SDK — importado via CDN como módulo ES
-     No requiere npm ni bundlers. Funciona en un solo .html
-===================================================== -->
-<!-- Firebase compat SDK - funciona como script normal, sin módulos ES -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script>
-// Adaptadores para que el código existente funcione con compat SDK
-const initializeApp = (config) => firebase.initializeApp(config);
-const getFirestore  = (app) => app.firestore();
-const collection    = (db, name) => db.collection(name);
-const addDoc        = (ref, data) => ref.add(data);
-const getDocs       = (ref) => ref.get();
-const deleteDoc     = (ref) => ref.delete();
-const doc           = (db, col, id) => db.collection(col).doc(id);
-const writeBatch    = (db) => db.batch();
-const orderBy       = (field, dir) => firebase.firestore.Query ? field : field;
-const query         = (ref, ...args) => ref.orderBy('timestamp', 'asc');
-const enableIndexedDbPersistence = (db) => db.enablePersistence().catch(()=>{});
-function onSnapshot(ref, cb, errCb) { return ref.onSnapshot(cb, errCb); }
-
-/* =====================================================
-   ██████╗  ██████╗ ███╗   ██╗███████╗██╗ ██████╗
-   ██╔════╝██╔═══██╗████╗  ██║██╔════╝██║██╔════╝
-   ██║     ██║   ██║██╔██╗ ██║█████╗  ██║██║  ███╗
-   ██║     ██║   ██║██║╚██╗██║██╔══╝  ██║██║   ██║
-   ╚██████╗╚██████╔╝██║ ╚████║██║     ██║╚██████╔╝
-    ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝ ╚═════╝
-
-   ┌─────────────────────────────────────────────────┐
-   │  SECCIÓN DE CONFIGURACIÓN DEL NEGOCIO           │
-   │  Edita estos valores para cada cliente nuevo.   │
-   │  Solo necesitas cambiar lo que está AQUÍ ABAJO. │
-   └─────────────────────────────────────────────────┘
-===================================================== */
-
-/* ── 1. NOMBRE DEL NEGOCIO ─────────────────────────
-   Se muestra en el header, exportaciones y resumen.  */
-const NOMBRE_NEGOCIO = "Nevería Estelita";
-
-/* ── 2. CREDENCIALES FIREBASE ──────────────────────
-   Pega aquí el objeto firebaseConfig que te da
-   Firebase Console → Configuración del proyecto.
-   Cada cliente tendrá sus propias credenciales.      */
-const firebaseConfig = {
-  apiKey: "AIzaSyD5AeBbmYNnZqr-Cj5KM7RCReHjoEh8UaQ",
-  authDomain: "neveria-estelita.firebaseapp.com",
-  projectId: "neveria-estelita",
-  storageBucket: "neveria-estelita.firebasestorage.app",
-  messagingSenderId: "926427401341",
-  appId: "1:926427401341:web:42ad5316408b90ce9cf514"
-};
-
-/* ── 3. CONTRASEÑA DE ADMINISTRADOR ────────────────
-   Solo números, 4 dígitos. Ej: '1234', '9876'       */
-const ADMIN_PASSWORD = '1234';
-
-/* ── 4. CATÁLOGO DE PRODUCTOS ──────────────────────
-   Modifica nombres, precios y emojis según el menú.
-   Formato: { name, price, emoji }                   */
-const PRODUCTS = [
-  { name: "Helado Sencillo",  price: 40,  emoji: "🍦" },
-  { name: "Helado Doble",     price: 60,  emoji: "🍨" },
-  { name: "Helado Triple",    price: 80,  emoji: "🍧" },
-  { name: "Raspado",          price: 60,  emoji: "🧊" },
-  { name: "Mangonada",        price: 50,  emoji: "🥭" },
-  { name: "Chamoyada",        price: 55,  emoji: "🌶️" },
-  { name: "Nachos",           price: 45,  emoji: "🧀" },
-  { name: "Fruta con Crema",  price: 65,  emoji: "🍓" },
-  { name: "Tostada de Nieve", price: 35,  emoji: "🍞" },
-  { name: "Agua Fresca",      price: 25,  emoji: "🥤" },
-  { name: "Paleta",           price: 20,  emoji: "🍡" },
-  { name: "Sundae",           price: 70,  emoji: "🍮" },
-];
-/* ── FIN DE LA SECCIÓN DE CONFIGURACIÓN ─────────── */
-
-
-/* =====================================================
-   INICIALIZACIÓN DE FIREBASE
-   Se inicializa la app y la base de datos Firestore.
-===================================================== */
-let app, db;
-let firebaseOk = false; // Bandera: ¿Firebase conectado correctamente?
-
-try {
-  app = initializeApp(firebaseConfig);
-  db  = getFirestore(app);
-
-  /* Habilitar modo offline: Firestore guarda los datos
-     en IndexedDB del navegador y sincroniza cuando
-     vuelve la conexión a internet. */
-  enableIndexedDbPersistence(db).catch(err => {
-    if (err.code === 'failed-precondition') {
-      // Varias pestañas abiertas al mismo tiempo — solo
-      // una puede tener persistencia activa a la vez.
-      console.warn('[Firebase] Persistencia offline desactivada: varias pestañas abiertas.');
-    } else if (err.code === 'unimplemented') {
-      // El navegador no soporta IndexedDB (muy raro hoy).
-      console.warn('[Firebase] Este navegador no soporta modo offline.');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nevería Estelita ✨</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* =============================================
+       VARIABLES Y RESET
+    ============================================= */
+    :root {
+      --rosa:    #FF6EB4;
+      --rosa-claro: #FFD6EC;
+      --azul:    #5BBFFF;
+      --azul-claro: #D6F0FF;
+      --morado:  #A56BFF;
+      --morado-claro: #E8D6FF;
+      --verde:   #4CD9A0;
+      --verde-claro: #C8F5E5;
+      --crema:   #FFFAF4;
+      --texto:   #2D1B4E;
+      --gris:    #7A6D8A;
+      --blanco:  #FFFFFF;
+      --sombra:  0 8px 32px rgba(165,107,255,.15);
+      --radio:   20px;
     }
-  });
-
-  firebaseOk = true;
-  console.info('[Firebase] ✅ Conexión establecida correctamente.');
-} catch (e) {
-  // Si las credenciales son inválidas o hay error de red,
-  // el sistema cae al modo localStorage como respaldo.
-  console.error('[Firebase] ❌ Error al inicializar:', e.message);
-  mostrarBannerError('Firebase no conectado: revisa las credenciales en la sección CONFIG del código.');
-}
-
-
-/* =====================================================
-   CAPA DE DATOS — ESTRATEGIA OFFLINE FIRST
-   
-   Funcionamiento:
-   1. Todo se guarda en localStorage PRIMERO (instantáneo)
-   2. Si hay internet → también se sube a Firestore
-   3. Si no hay internet → queda en cola (pendientes)
-   4. Al volver internet → sincroniza pendientes automáticamente
-   
-   Así funciona 100% offline sin importar el estado de Firebase.
-===================================================== */
-
-const COL_VENTAS = 'ventas';
-const COL_GASTOS = 'gastos';
-
-/* Estado en memoria — se carga desde localStorage al iniciar */
-let _ventas = [];
-let _gastos = [];
-
-/* ── Guardar venta: SOLO Firebase ── */
-async function saveVenta(ventaObj) {
-  await addDoc(collection(db, COL_VENTAS), ventaObj);
-  // onSnapshot se dispara automáticamente y actualiza _ventas + UI
-}
-
-/* ── Guardar gasto: SOLO Firebase ── */
-async function saveGasto(gastoObj) {
-  await addDoc(collection(db, COL_GASTOS), gastoObj);
-  // onSnapshot se dispara automáticamente y actualiza _gastos + UI
-}
-
-/* ── Eliminar movimiento: SOLO Firebase ── */
-async function deleteMovFirestore(coleccion, docId) {
-  await deleteDoc(doc(db, coleccion, docId));
-  // onSnapshot actualiza la UI automáticamente
-}
-
-/* ── Limpiar todo ───────────────────────────────── */
-async function deleteAllDocs(coleccion) {
-  if (coleccion === COL_VENTAS) {
-    _ventas = [];
-    localStorage.removeItem('estelita_ventas');
-  } else {
-    _gastos = [];
-    localStorage.removeItem('estelita_gastos');
-  }
-
-  if (firebaseOk && navigator.onLine) {
-    try {
-      const snap = await getDocs(collection(db, coleccion));
-      const batch = writeBatch(db);
-      snap.forEach(d => batch.delete(d.ref));
-      await batch.commit();
-    } catch (e) {
-      console.warn('[Offline] No se pudo limpiar Firebase aún.');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--crema);
+      color: var(--texto);
+      overflow-x: hidden;
     }
-  }
-}
 
-/* ── Getters ────────────────────────────────────── */
-function getVentas() { return _ventas; }
-function getGastos() { return _gastos; }
-
-/* sincronizarPendientes eliminado — Firebase maneja todo */
-
-/* ── Listener en tiempo real de Firestore ──────────
-   Firestore es la ÚNICA fuente de verdad.
-   onSnapshot reemplaza _ventas/_gastos completo cada vez.
-   Sin mezclas, sin duplicados posibles.               */
-function suscribirFirestore() {
-  if (!firebaseOk) return;
-
-  onSnapshot(
-    query(collection(db, COL_VENTAS), orderBy('timestamp', 'asc')),
-    snap => {
-      // Reemplazar COMPLETO — Firestore manda la lista definitiva
-      _ventas = snap.docs.map(d => ({ ...d.data(), _docId: d.id }));
-      refreshDashboard();
-      renderChart();
-    },
-    err => console.warn('[Firestore] Sin conexión, usando datos locales.')
-  );
-
-  onSnapshot(
-    query(collection(db, COL_GASTOS), orderBy('timestamp', 'asc')),
-    snap => {
-      _gastos = snap.docs.map(d => ({ ...d.data(), _docId: d.id }));
-      refreshDashboard();
-      renderChart();
-    },
-    err => console.warn('[Firestore] Sin conexión, usando datos locales.')
-  );
-}
-
-/* =====================================================
-   INDICADOR DE ESTADO DE CONEXIÓN
-   Muestra un badge en el header: 🟢 En línea / 🔴 Sin conexión
-===================================================== */
-function initConexionIndicator() {
-  const badge = document.getElementById('conexion-badge');
-  if (!badge) return;
-
-  function actualizar() {
-    if (navigator.onLine) {
-      badge.textContent = '🟢 En línea';
-      badge.style.color = 'var(--green)';
-    } else {
-      badge.textContent = '🔴 Sin conexión (modo offline)';
-      badge.style.color = 'var(--pink)';
+    /* =============================================
+       FONDO DECORATIVO (burbujas pastel)
+    ============================================= */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: -1;
+      background:
+        radial-gradient(circle at 10% 20%,  rgba(255,110,180,.12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 10%,  rgba(91,191,255,.12)  0%, transparent 40%),
+        radial-gradient(circle at 80% 80%,  rgba(165,107,255,.10) 0%, transparent 40%),
+        radial-gradient(circle at 20% 85%,  rgba(76,217,160,.10)  0%, transparent 40%),
+        var(--crema);
     }
-  }
 
-  actualizar();
-  window.addEventListener('online',  actualizar);
-  window.addEventListener('offline', actualizar);
-}
-
-/* Banner de error para credenciales inválidas */
-function mostrarBannerError(msg) {
-  const banner = document.getElementById('firebase-banner');
-  if (banner) {
-    banner.textContent = '⚠️ ' + msg;
-    banner.style.display = 'block';
-  }
-}
-
-
-/* =====================================================
-   TABS
-===================================================== */
-function showTab(tab) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('sec-' + tab).classList.add('active');
-  event.currentTarget.classList.add('active');
-  if (tab === 'acc') { refreshDashboard(); setTimeout(renderChart, 80); }
-}
-window.showTab = showTab; // Exponemos al HTML (onclick)
-
-
-/* =====================================================
-   CATÁLOGO DE PRODUCTOS
-===================================================== */
-function renderCatalog() {
-  const grid = document.getElementById('catalog-grid');
-  grid.innerHTML = PRODUCTS.map((p, i) => `
-    <button class="product-btn" onclick="addToTicket(${i})">
-      <span class="emoji">${p.emoji}</span>
-      <span class="p-name">${p.name}</span>
-      <span class="p-price">$${p.price}</span>
-    </button>
-  `).join('');
-}
-
-
-/* =====================================================
-   TICKET: Agregar, ajustar cantidad, limpiar
-===================================================== */
-let ticket = {}; // { productName: { name, price, qty } }
-
-function addToTicket(productIndex) {
-  const p = PRODUCTS[productIndex];
-  if (ticket[p.name]) {
-    ticket[p.name].qty++;
-  } else {
-    ticket[p.name] = { name: p.name, price: p.price, qty: 1 };
-  }
-  renderTicket();
-}
-window.addToTicket = addToTicket;
-
-function changeQty(name, delta) {
-  if (!ticket[name]) return;
-  ticket[name].qty += delta;
-  if (ticket[name].qty <= 0) delete ticket[name];
-  renderTicket();
-}
-window.changeQty = changeQty;
-
-function renderTicket() {
-  const container = document.getElementById('ticket-items');
-  const keys = Object.keys(ticket);
-
-  if (keys.length === 0) {
-    container.innerHTML = `
-      <div class="ticket-empty">
-        <div class="emoji-big">🍦</div>
-        <p>Agrega productos<br>para comenzar</p>
-      </div>`;
-    setTotal(0);
-    return;
-  }
-
-  container.innerHTML = keys.map(name => {
-    const item = ticket[name];
-    const sub  = item.price * item.qty;
-    return `
-      <div class="ticket-item">
-        <div class="qty-ctrl">
-          <button onclick="changeQty('${name}', -1)">−</button>
-          <span class="qty">${item.qty}</span>
-          <button onclick="changeQty('${name}', 1)">+</button>
-        </div>
-        <span class="ti-name">${item.name}</span>
-        <span class="ti-sub">$${sub}</span>
-      </div>`;
-  }).join('');
-
-  const total = keys.reduce((acc, n) => acc + ticket[n].price * ticket[n].qty, 0);
-  setTotal(total);
-}
-
-function setTotal(amount) {
-  const t1 = document.getElementById('ticket-total');
-  const t2 = document.getElementById('btn-cobrar-total');
-  if (t1) t1.textContent = '$' + amount;
-  if (t2) t2.textContent = '$' + amount;
-}
-
-function clearTicket() {
-  ticket = {};
-  renderTicket();
-}
-window.clearTicket = clearTicket;
-
-
-/* =====================================================
-   COBRAR — Registrar venta en Firestore
-===================================================== */
-async function cobrar() {
-  const keys = Object.keys(ticket);
-  if (keys.length === 0) {
-    showToast('El ticket está vacío 🍦', 'error');
-    return;
-  }
-
-  const total = keys.reduce((acc, n) => acc + ticket[n].price * ticket[n].qty, 0);
-  const items = keys.map(n => `${ticket[n].qty}x ${n}`).join(', ');
-
-  const ventaObj = {
-    id:        Date.now() + '_v',
-    type:      'venta',
-    desc:      'Venta: ' + items,
-    amount:    total,
-    date:      new Date().toLocaleString('es-MX'),
-    timestamp: Date.now()
-  };
-
-  try {
-    await saveVenta(ventaObj);
-    // ✅ Limpiamos el ticket DESPUÉS de que se guardó correctamente
-    clearTicket();
-    if (navigator.onLine) {
-      showToast(`✅ Venta de $${total} registrada`, 'success');
-    } else {
-      showToast(`✅ $${total} guardado sin internet — se sincronizará solo 📶`, 'info');
+    /* =============================================
+       HEADER / NAV
+    ============================================= */
+    header {
+      position: sticky; top: 0; z-index: 900;
+      background: rgba(255,250,244,.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 2px solid var(--rosa-claro);
+      padding: 0 1.25rem;
     }
-  } catch (e) {
-    showToast('⚠️ Error al guardar, intenta de nuevo', 'error');
-  }
-}
-window.cobrar = cobrar;
-
-
-/* =====================================================
-   REGISTRAR GASTO en Firestore
-===================================================== */
-async function registrarGasto() {
-  const desc  = document.getElementById('gasto-desc').value.trim();
-  const monto = parseFloat(document.getElementById('gasto-monto').value);
-  const cat   = document.getElementById('gasto-cat').value;
-
-  if (!desc)              { showToast('Escribe una descripción', 'error');    return; }
-  if (!monto || monto <= 0) { showToast('Ingresa un monto válido', 'error'); return; }
-
-  const gastoObj = {
-    id:        Date.now() + '_g',
-    type:      'gasto',
-    desc:      `[${cat}] ${desc}`,
-    amount:    monto,
-    date:      new Date().toLocaleString('es-MX'),
-    timestamp: Date.now()
-  };
-
-  try {
-    await saveGasto(gastoObj);
-    document.getElementById('gasto-desc').value  = '';
-    document.getElementById('gasto-monto').value = '';
-    showToast(`💾 Gasto de $${monto} registrado`, 'success');
-  } catch (e) {
-    showToast('⚠️ Guardado local. Se sincronizará al recuperar conexión.', 'info');
-    document.getElementById('gasto-desc').value  = '';
-    document.getElementById('gasto-monto').value = '';
-  }
-}
-window.registrarGasto = registrarGasto;
-
-
-/* =====================================================
-   DASHBOARD — Actualizar tarjetas e historial
-   Ahora lee de _ventas / _gastos (en memoria, reactivo)
-===================================================== */
-function refreshDashboard() {
-  const ventas = getVentas();
-  const gastos = getGastos();
-
-  const totalV   = ventas.reduce((a, v) => a + v.amount, 0);
-  const totalG   = gastos.reduce((a, g) => a + g.amount, 0);
-  const ganancia = totalV - totalG;
-
-  document.getElementById('stat-ventas').textContent   = '$' + totalV.toFixed(2);
-  document.getElementById('stat-gastos').textContent   = '$' + totalG.toFixed(2);
-  document.getElementById('stat-ganancia').textContent = '$' + ganancia.toFixed(2);
-
-  const gEl = document.getElementById('stat-ganancia');
-  gEl.style.color = ganancia >= 0 ? 'var(--green)' : 'var(--pink)';
-
-  // Combinar y ordenar: más recientes primero
-  const all = [
-    ...ventas.map(v => ({ ...v, type: 'venta' })),
-    ...gastos.map(g => ({ ...g, type: 'gasto' }))
-  ].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-  const listEl = document.getElementById('mov-list');
-  document.getElementById('mov-count').textContent = all.length + ' registros';
-
-  if (all.length === 0) {
-    listEl.innerHTML = '<div class="mov-empty">Sin movimientos aún</div>';
-    return;
-  }
-
-  // Guardamos el array para que deleteMovimiento lo use
-  listEl.dataset.all = JSON.stringify(all.slice(0, 50));
-
-  listEl.innerHTML = all.slice(0, 50).map((m, i) => `
-    <div class="mov-item" id="movrow-${i}">
-      <div class="mov-dot ${m.type}"></div>
-      <div class="mov-desc">
-        <div class="m-title">${m.desc}</div>
-        <div class="m-time">${m.date}</div>
-      </div>
-      <div class="mov-amount ${m.type}">
-        ${m.type === 'venta' ? '+' : '-'}$${parseFloat(m.amount).toFixed(2)}
-      </div>
-      <button class="mov-del-btn" title="Eliminar este registro"
-        onclick="deleteMovimiento(${i})">✕</button>
-    </div>
-  `).join('');
-}
-window.refreshDashboard = refreshDashboard;
-
-
-/* =====================================================
-   ELIMINAR MOVIMIENTO INDIVIDUAL
-   Usa el _docId de Firestore para borrar el documento.
-===================================================== */
-async function deleteMovimiento(index) {
-  const listEl = document.getElementById('mov-list');
-  const all    = JSON.parse(listEl.dataset.all || '[]');
-  const m      = all[index];
-  if (!m) return;
-
-  // Animación de salida inmediata (respuesta visual rápida)
-  const el = document.getElementById('movrow-' + index);
-  if (el) {
-    el.style.transition = 'opacity 0.2s, transform 0.2s';
-    el.style.opacity    = '0';
-    el.style.transform  = 'translateX(20px)';
-  }
-
-  // _docId es el ID del documento en Firestore
-  const coleccion = m.type === 'venta' ? COL_VENTAS : COL_GASTOS;
-  const docId     = m._docId || m.id; // usa _docId de Firestore, o id local
-
-  await deleteMovFirestore(coleccion, docId);
-
-  const label = m.type === 'venta' ? 'Venta eliminada' : 'Gasto eliminado';
-  showToast(`🗑 ${label} del historial`, 'info');
-  // onSnapshot actualizará la UI automáticamente
-}
-window.deleteMovimiento = deleteMovimiento;
-
-
-/* =====================================================
-   LIMPIAR TODO — borra ambas colecciones en Firestore
-===================================================== */
-async function confirmarLimpiar() {
-  const val = document.getElementById('limpiar-pwd').value;
-  if (val !== ADMIN_PASSWORD) {
-    document.getElementById('limpiar-error').textContent = '❌ Contraseña incorrecta';
-    document.getElementById('limpiar-pwd').value         = '';
-    document.getElementById('limpiar-pwd').focus();
-    return;
-  }
-
-  // Contraseña correcta — borrar todo en Firestore
-  try {
-    await deleteAllDocs(COL_VENTAS);
-    await deleteAllDocs(COL_GASTOS);
-  } catch (e) {
-    showToast('❌ Error al limpiar. Revisa conexión.', 'error');
-  }
-
-  ticket = {};
-  cerrarLimpiarModal();
-  renderTicket();
-  // onSnapshot se encargará del refresh del dashboard
-  showToast('🗑 Todos los datos han sido borrados', 'info');
-}
-window.confirmarLimpiar = confirmarLimpiar;
-
-function openModal()           { 
-  const m = document.getElementById('limpiar-modal');
-  document.getElementById('limpiar-pwd').value       = '';
-  document.getElementById('limpiar-error').textContent = '';
-  m.style.display = 'flex';
-  setTimeout(() => document.getElementById('limpiar-pwd').focus(), 100);
-}
-function cerrarLimpiarModal()  { document.getElementById('limpiar-modal').style.display = 'none'; }
-function closeModal()          { cerrarLimpiarModal(); }
-window.openModal          = openModal;
-window.cerrarLimpiarModal = cerrarLimpiarModal;
-window.closeModal         = closeModal;
-
-
-/* =====================================================
-   MODAL CONTRASEÑA (para acciones admin extras)
-===================================================== */
-let pendingAction = null;
-
-function requirePassword(action) {
-  pendingAction = action;
-  document.getElementById('pwd-input').value         = '';
-  document.getElementById('pwd-error').textContent   = '';
-  updateDots('');
-  document.getElementById('pwd-modal').classList.add('open');
-  setTimeout(() => document.getElementById('pwd-input').focus(), 100);
-}
-function closePwdModal() {
-  document.getElementById('pwd-modal').classList.remove('open');
-  pendingAction = null;
-}
-function onPwdInput() {
-  const val = document.getElementById('pwd-input').value;
-  updateDots(val);
-  document.getElementById('pwd-error').textContent = '';
-}
-function updateDots(val) {
-  for (let i = 0; i < 4; i++) {
-    document.getElementById('d' + i).classList.toggle('filled', i < val.length);
-  }
-}
-function togglePwdVis() {
-  const inp = document.getElementById('pwd-input');
-  const eye = document.getElementById('pwd-eye');
-  if (inp.type === 'password') { inp.type = 'text';     eye.textContent = '🙈'; }
-  else                         { inp.type = 'password'; eye.textContent = '👁'; }
-}
-function verifyPwd() {
-  const val = document.getElementById('pwd-input').value;
-  if (val === ADMIN_PASSWORD) {
-    closePwdModal();
-    if (pendingAction) pendingAction();
-  } else {
-    const box = document.querySelector('#pwd-modal .modal-box');
-    box.classList.remove('shake');
-    void box.offsetWidth;
-    box.classList.add('shake');
-    document.getElementById('pwd-error').textContent = '❌ Contraseña incorrecta. Intenta de nuevo.';
-    document.getElementById('pwd-input').value        = '';
-    updateDots('');
-    setTimeout(() => box.classList.remove('shake'), 400);
-  }
-}
-window.requirePassword = requirePassword;
-window.closePwdModal   = closePwdModal;
-window.onPwdInput      = onPwdInput;
-window.togglePwdVis    = togglePwdVis;
-window.verifyPwd       = verifyPwd;
-
-
-/* =====================================================
-   EXPORTAR CSV
-===================================================== */
-function exportCSV() {
-  const ventas = getVentas();
-  const gastos = getGastos();
-  const all    = [
-    ...ventas.map(v => ({ ...v, type: 'Venta' })),
-    ...gastos.map(g => ({ ...g, type: 'Gasto' }))
-  ];
-  if (all.length === 0) { showToast('No hay datos para exportar', 'info'); return; }
-
-  const header = 'Tipo,Descripción,Monto,Fecha\n';
-  const rows   = all.map(r =>
-    `"${r.type}","${r.desc}","${parseFloat(r.amount).toFixed(2)}","${r.date}"`
-  ).join('\n');
-
-  downloadFile('neveria-estelita.csv', header + rows, 'text/csv');
-  showToast('📥 CSV exportado', 'success');
-}
-
-/* =====================================================
-   EXPORTAR TXT
-===================================================== */
-function exportTXT() {
-  const ventas   = getVentas();
-  const gastos   = getGastos();
-  const totalV   = ventas.reduce((a, v) => a + v.amount, 0);
-  const totalG   = gastos.reduce((a, g) => a + g.amount, 0);
-  const ganancia = totalV - totalG;
-
-  let txt = `========================================\n`;
-  txt    += `    ${NOMBRE_NEGOCIO.toUpperCase()} — RESUMEN GENERAL\n`;
-  txt    += `    ${new Date().toLocaleString('es-MX')}\n`;
-  txt    += `========================================\n\n`;
-  txt    += `💳 TOTAL VENTAS:   $${totalV.toFixed(2)}\n`;
-  txt    += `🧾 TOTAL GASTOS:   $${totalG.toFixed(2)}\n`;
-  txt    += `📈 GANANCIA NETA:  $${ganancia.toFixed(2)}\n`;
-  txt    += `\n--- VENTAS ---\n`;
-  ventas.forEach(v => { txt += `  [${v.date}] ${v.desc} → +$${parseFloat(v.amount).toFixed(2)}\n`; });
-  txt    += `\n--- GASTOS ---\n`;
-  gastos.forEach(g => { txt += `  [${g.date}] ${g.desc} → -$${parseFloat(g.amount).toFixed(2)}\n`; });
-  txt    += `\n========================================\n`;
-
-  downloadFile('resumen-estelita.txt', txt, 'text/plain');
-  showToast('📄 Resumen TXT exportado', 'success');
-}
-
-function downloadFile(name, content, type) {
-  const blob = new Blob([content], { type });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = name; a.click();
-  URL.revokeObjectURL(url);
-}
-
-window.exportCSV  = exportCSV;
-window.exportTXT  = exportTXT;
-
-
-/* =====================================================
-   GRÁFICA (Chart.js) — igual que el original
-===================================================== */
-let chartInstance    = null;
-let currentChartType = 'barras';
-
-function switchChart(type, btn) {
-  currentChartType = type;
-  document.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderChart();
-}
-window.switchChart = switchChart;
-
-function renderChart() {
-  const ventas = getVentas();
-  const gastos = getGastos();
-
-  const dias = {};
-  [...ventas, ...gastos].forEach(m => {
-    const fecha = m.date.split(',')[0].trim();
-    if (!dias[fecha]) dias[fecha] = { ventas: 0, gastos: 0 };
-    if (m.type === 'venta') dias[fecha].ventas += m.amount;
-    else                    dias[fecha].gastos += m.amount;
-  });
-
-  const labels = Object.keys(dias).slice(-7);
-  const dataV  = labels.map(d => dias[d].ventas);
-  const dataG  = labels.map(d => dias[d].gastos);
-  const totalV = ventas.reduce((a, v) => a + v.amount, 0);
-  const totalG = gastos.reduce((a, g) => a + g.amount, 0);
-
-  const canvas = document.getElementById('main-chart');
-  if (!canvas) return;
-  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
-
-  const ctx = canvas.getContext('2d');
-  const commonOptions = {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { labels: { color: '#f0eeff', font: { family: 'DM Sans', size: 12 }, boxWidth: 14 } },
-      tooltip: {
-        backgroundColor: '#1a1a28', borderColor: 'rgba(255,255,255,0.08)', borderWidth: 1,
-        titleColor: '#f0eeff', bodyColor: '#7a7a9a',
-        callbacks: { label: ctx => ' $' + ctx.parsed.toFixed(2) }
-      }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
     }
-  };
+    .logo {
+      display: flex; align-items: center; gap: .5rem;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--rosa), var(--morado));
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-size: 1.3rem;
+      box-shadow: 0 4px 12px rgba(165,107,255,.35);
+    }
+    .logo-name {
+      font-family: 'Pacifico', cursive;
+      font-size: 1.35rem;
+      background: linear-gradient(90deg, var(--rosa), var(--morado));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    nav { display: flex; gap: 1.5rem; align-items: center; }
+    nav a {
+      text-decoration: none; color: var(--gris);
+      font-weight: 700; font-size: .9rem;
+      transition: color .2s;
+    }
+    nav a:hover { color: var(--morado); }
+    .btn-carrito-nav {
+      background: linear-gradient(135deg, var(--rosa), var(--morado));
+      color: #fff; border: none; border-radius: 50px;
+      padding: .45rem 1rem; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: .85rem; cursor: pointer;
+      display: flex; align-items: center; gap: .4rem;
+      box-shadow: 0 4px 14px rgba(165,107,255,.3);
+      transition: transform .18s, box-shadow .18s;
+    }
+    .btn-carrito-nav:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(165,107,255,.4); }
+    .carrito-badge {
+      background: var(--verde); color: var(--texto);
+      border-radius: 50%; width: 20px; height: 20px;
+      display: grid; place-items: center; font-size: .72rem;
+      font-weight: 900; line-height: 1;
+    }
+    /* Hamburger */
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+    .hamburger span { display: block; width: 24px; height: 2.5px; background: var(--morado); border-radius: 4px; transition: .3s; }
+    .mobile-menu {
+      display: none; flex-direction: column; gap: .75rem;
+      padding: .75rem 1.25rem 1rem;
+      border-top: 1px solid var(--rosa-claro);
+    }
+    .mobile-menu a { color: var(--texto); font-weight: 700; text-decoration: none; }
+    .mobile-menu.open { display: flex; }
 
-  if (currentChartType === 'barras') {
-    const hasData = labels.length > 0;
-    chartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: hasData ? labels : ['Sin datos aún'],
-        datasets: [
-          { label: 'Ventas', data: hasData ? dataV : [0], backgroundColor: 'rgba(63,164,255,0.7)', borderColor: '#3fa4ff', borderWidth: 2, borderRadius: 8 },
-          { label: 'Gastos', data: hasData ? dataG : [0], backgroundColor: 'rgba(255,63,164,0.7)', borderColor: '#ff3fa4', borderWidth: 2, borderRadius: 8 }
-        ]
-      },
-      options: {
-        ...commonOptions,
-        scales: {
-          x: { ticks: { color: '#7a7a9a', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
-          y: { ticks: { color: '#7a7a9a', font: { size: 11 }, callback: v => '$' + v }, grid: { color: 'rgba(255,255,255,0.06)' } }
-        }
-      }
-    });
-  } else {
-    const ganancia = Math.max(0, totalV - totalG);
-    chartInstance = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Ventas', 'Gastos', 'Ganancia'],
-        datasets: [{
-          data: [totalV || 0.01, totalG || 0.01, ganancia || 0.01],
-          backgroundColor: ['rgba(63,164,255,0.8)', 'rgba(255,63,164,0.8)', 'rgba(63,255,164,0.8)'],
-          borderColor: ['#3fa4ff', '#ff3fa4', '#3fffa4'],
-          borderWidth: 2, hoverOffset: 10,
-        }]
-      },
-      options: {
-        ...commonOptions, cutout: '65%',
-        plugins: { ...commonOptions.plugins, tooltip: { ...commonOptions.plugins.tooltip, callbacks: { label: ctx => ` $${ctx.parsed.toFixed(2)}` } } }
-      }
-    });
-  }
-}
-window.renderChart = renderChart;
+    /* =============================================
+       HERO
+    ============================================= */
+    .hero {
+      padding: 5rem 1.25rem 4rem;
+      text-align: center; position: relative;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: var(--azul-claro); color: var(--azul);
+      border-radius: 50px; padding: .35rem 1rem;
+      font-size: .8rem; font-weight: 800; letter-spacing: .05em;
+      margin-bottom: 1.25rem; text-transform: uppercase;
+    }
+    .hero h1 {
+      font-family: 'Pacifico', cursive;
+      font-size: clamp(2.2rem, 7vw, 4.2rem);
+      line-height: 1.2;
+      background: linear-gradient(135deg, var(--rosa), var(--morado) 50%, var(--azul));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      max-width: 520px; margin: 0 auto 2rem;
+      color: var(--gris); font-size: 1.1rem; line-height: 1.7;
+    }
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--rosa), var(--morado));
+      color: #fff; text-decoration: none;
+      border-radius: 50px; padding: .8rem 2rem;
+      font-weight: 800; font-size: 1rem;
+      box-shadow: 0 6px 20px rgba(255,110,180,.4);
+      transition: transform .2s, box-shadow .2s;
+      border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(255,110,180,.5); }
+    .btn-secondary {
+      background: transparent;
+      border: 2.5px solid var(--morado);
+      color: var(--morado);
+      border-radius: 50px; padding: .8rem 2rem;
+      font-weight: 800; font-size: 1rem; text-decoration: none;
+      transition: background .2s, color .2s;
+    }
+    .btn-secondary:hover { background: var(--morado); color: #fff; }
+    .hero-emojis {
+      margin-top: 3rem;
+      font-size: 3rem;
+      display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;
+      animation: flotar 3s ease-in-out infinite alternate;
+    }
+    @keyframes flotar {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-10px); }
+    }
 
+    /* =============================================
+       SECCIÓN GENÉRICA
+    ============================================= */
+    section { padding: 4rem 1.25rem; max-width: 1100px; margin: 0 auto; }
+    .section-title {
+      text-align: center; margin-bottom: 2.5rem;
+    }
+    .section-title h2 {
+      font-family: 'Pacifico', cursive;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      background: linear-gradient(90deg, var(--morado), var(--rosa));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: .5rem;
+    }
+    .section-title p { color: var(--gris); font-size: 1rem; }
 
-/* =====================================================
-   TOAST
-===================================================== */
-function showToast(msg, type = 'info') {
-  const container = document.getElementById('toast-container');
-  const t = document.createElement('div');
-  t.className   = `toast ${type}`;
-  t.textContent = msg;
-  container.appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 2800);
-}
-window.showToast = showToast;
+    /* =============================================
+       CATEGORÍAS
+    ============================================= */
+    .categorias {
+      display: flex; gap: .75rem; justify-content: center;
+      flex-wrap: wrap; margin-bottom: 2.5rem;
+    }
+    .cat-btn {
+      background: var(--blanco); border: 2px solid var(--morado-claro);
+      color: var(--morado); border-radius: 50px;
+      padding: .5rem 1.25rem; font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: .88rem; cursor: pointer;
+      transition: all .2s;
+    }
+    .cat-btn.activo,
+    .cat-btn:hover {
+      background: var(--morado); color: #fff;
+      border-color: var(--morado);
+    }
 
+    /* =============================================
+       GRID DE PRODUCTOS
+    ============================================= */
+    .productos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: var(--blanco);
+      border-radius: var(--radio);
+      overflow: hidden;
+      box-shadow: var(--sombra);
+      transition: transform .25s, box-shadow .25s;
+      display: flex; flex-direction: column;
+    }
+    .card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(165,107,255,.22); }
+    .card-emoji {
+      font-size: 4rem;
+      text-align: center;
+      padding: 1.5rem 1rem .5rem;
+      background: linear-gradient(135deg, var(--rosa-claro), var(--morado-claro));
+    }
+    .card-body { padding: 1rem 1.25rem 1.25rem; flex: 1; display: flex; flex-direction: column; }
+    .card-tag {
+      display: inline-block;
+      font-size: .7rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .06em; border-radius: 50px;
+      padding: .2rem .65rem; margin-bottom: .5rem;
+    }
+    .tag-helado  { background: var(--rosa-claro);   color: var(--rosa); }
+    .tag-paleta  { background: var(--azul-claro);   color: #2b8fd4; }
+    .tag-antojo  { background: var(--verde-claro);  color: #1a9e6b; }
+    .tag-bebida  { background: var(--morado-claro); color: var(--morado); }
+    .card h3 { font-size: 1rem; font-weight: 800; margin-bottom: .3rem; }
+    .card p  { font-size: .83rem; color: var(--gris); flex: 1; line-height: 1.5; }
+    .card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 1rem;
+    }
+    .precio {
+      font-weight: 800; font-size: 1.1rem;
+      background: linear-gradient(90deg, var(--morado), var(--rosa));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .btn-agregar {
+      background: linear-gradient(135deg, var(--verde), #2fc98c);
+      color: #fff; border: none; border-radius: 50px;
+      padding: .45rem 1rem; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: .82rem; cursor: pointer;
+      transition: transform .18s, box-shadow .18s;
+      box-shadow: 0 4px 14px rgba(76,217,160,.35);
+    }
+    .btn-agregar:hover { transform: scale(1.06); box-shadow: 0 6px 18px rgba(76,217,160,.45); }
+    .btn-agregar.agregado { background: var(--morado); box-shadow: 0 4px 14px rgba(165,107,255,.35); }
 
-/* =====================================================
-   INICIALIZAR APP
-   Todo arranca aquí al cargar la página.
-===================================================== */
-// Esperar a que el HTML esté listo antes de arrancar
-document.addEventListener('DOMContentLoaded', () => {
-  renderCatalog();
-  refreshDashboard();
-  suscribirFirestore();
-  initConexionIndicator();
-});
+    /* =============================================
+       CARRITO PANEL
+    ============================================= */
+    .carrito-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(45,27,78,.45);
+      backdrop-filter: blur(4px);
+    }
+    .carrito-overlay.abierto { display: block; }
+    .carrito-panel {
+      position: fixed; top: 0; right: -100%;
+      width: min(400px, 100vw); height: 100dvh;
+      background: var(--blanco); z-index: 1001;
+      display: flex; flex-direction: column;
+      box-shadow: -8px 0 40px rgba(45,27,78,.2);
+      transition: right .35s cubic-bezier(.4,0,.2,1);
+      border-radius: var(--radio) 0 0 var(--radio);
+    }
+    .carrito-panel.abierto { right: 0; }
+    .carrito-header {
+      padding: 1.25rem 1.5rem;
+      background: linear-gradient(135deg, var(--rosa), var(--morado));
+      color: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+      border-radius: var(--radio) 0 0 0;
+    }
+    .carrito-header h2 { font-size: 1.2rem; font-weight: 800; }
+    .btn-cerrar {
+      background: rgba(255,255,255,.25); border: none;
+      color: #fff; border-radius: 50%; width: 34px; height: 34px;
+      font-size: 1.2rem; cursor: pointer; display: grid; place-items: center;
+      transition: background .2s;
+    }
+    .btn-cerrar:hover { background: rgba(255,255,255,.4); }
+    .carrito-items { flex: 1; overflow-y: auto; padding: 1rem 1.5rem; }
+    .carrito-vacio {
+      text-align: center; color: var(--gris);
+      padding: 3rem 1rem;
+    }
+    .carrito-vacio .emoji-vacio { font-size: 3.5rem; display: block; margin-bottom: .75rem; }
+    .item-carrito {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .9rem 0;
+      border-bottom: 1px solid var(--rosa-claro);
+    }
+    .item-emoji { font-size: 2rem; width: 44px; text-align: center; }
+    .item-info { flex: 1; }
+    .item-info strong { font-size: .9rem; display: block; margin-bottom: .15rem; }
+    .item-precio { font-size: .8rem; color: var(--morado); font-weight: 700; }
+    .item-controles { display: flex; align-items: center; gap: .4rem; }
+    .btn-qty {
+      background: var(--morado-claro); border: none;
+      color: var(--morado); border-radius: 50%;
+      width: 28px; height: 28px; font-size: 1rem;
+      cursor: pointer; font-weight: 900;
+      display: grid; place-items: center;
+      transition: background .18s;
+    }
+    .btn-qty:hover { background: var(--morado); color: #fff; }
+    .item-qty { font-weight: 800; font-size: .9rem; min-width: 20px; text-align: center; }
+    .btn-eliminar {
+      background: #ffeaea; border: none; color: #e05555;
+      border-radius: 50%; width: 28px; height: 28px;
+      font-size: .85rem; cursor: pointer; display: grid; place-items: center;
+      transition: background .18s;
+    }
+    .btn-eliminar:hover { background: #e05555; color: #fff; }
+    .carrito-footer { padding: 1.25rem 1.5rem; border-top: 2px solid var(--rosa-claro); }
+    .total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1rem;
+    }
+    .total-label { font-weight: 700; color: var(--gris); }
+    .total-monto {
+      font-family: 'Pacifico', cursive; font-size: 1.4rem;
+      background: linear-gradient(90deg, var(--morado), var(--rosa));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .btn-whatsapp {
+      width: 100%;
+      background: linear-gradient(135deg, #25D366, #128C7E);
+      color: #fff; border: none; border-radius: 50px;
+      padding: .9rem; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: .5rem;
+      box-shadow: 0 6px 20px rgba(37,211,102,.35);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-whatsapp:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(37,211,102,.45); }
+    .btn-whatsapp:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .nombre-input-wrap {
+      margin-bottom: 1rem;
+    }
+    .nombre-input-wrap label {
+      display: block; font-size: .85rem; font-weight: 800;
+      margin-bottom: .4rem; color: var(--texto);
+    }
+    .nombre-input-wrap input {
+      width: 100%; padding: .65rem 1rem;
+      border: 2px solid var(--morado-claro);
+      border-radius: 50px; font-family: 'Nunito', sans-serif;
+      font-size: .9rem; color: var(--texto);
+      outline: none; transition: border-color .2s;
+    }
+    .nombre-input-wrap input:focus { border-color: var(--morado); }
+    .nombre-input-wrap input.error { border-color: var(--rosa); }
+    .nombre-error {
+      display: none; font-size: .75rem;
+      color: var(--rosa); font-weight: 700;
+      margin-top: .3rem; padding-left: .5rem;
+    }
+    .nombre-error.visible { display: block; }
+    .confirmacion-aviso {
+      text-align: center; font-size: .75rem;
+      color: var(--gris); margin-top: .75rem; line-height: 1.5;
+    }
 
-</script>
-<style>
-  /* =============================================
-     CSS VARIABLES & RESET
-  ============================================= */
-  :root {
-    --bg:        #0a0a0f;
-    --bg2:       #111118;
-    --bg3:       #1a1a28;
-    --glass:     rgba(255,255,255,0.04);
-    --glass-b:   rgba(255,255,255,0.08);
-    --border:    rgba(255,255,255,0.07);
+    /* =============================================
+       NOSOTROS / INFO
+    ============================================= */
+    .nosotros-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+    .info-card {
+      background: var(--blanco); border-radius: var(--radio);
+      padding: 1.75rem 1.5rem; text-align: center;
+      box-shadow: var(--sombra);
+    }
+    .info-card .ic-icon { font-size: 2.5rem; margin-bottom: .75rem; display: block; }
+    .info-card h3 { font-size: 1rem; font-weight: 800; margin-bottom: .4rem; }
+    .info-card p  { font-size: .85rem; color: var(--gris); line-height: 1.6; }
 
-    --pink:   #ff3fa4;
-    --blue:   #3fa4ff;
-    --purple: #9b3fff;
-    --green:  #3fffa4;
-    --yellow: #ffe23f;
+    /* =============================================
+       FOOTER
+    ============================================= */
+    footer {
+      background: var(--texto);
+      color: rgba(255,255,255,.75);
+      padding: 3rem 1.25rem 2rem;
+      margin-top: 4rem;
+    }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+    }
+    .footer-col h4 {
+      font-family: 'Pacifico', cursive;
+      color: #fff; font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+    .footer-col p, .footer-col a {
+      font-size: .88rem; line-height: 1.8;
+      text-decoration: none; color: rgba(255,255,255,.65);
+      display: block; transition: color .2s;
+    }
+    .footer-col a:hover { color: var(--rosa); }
+    .redes { display: flex; gap: .75rem; margin-top: .5rem; flex-wrap: wrap; }
+    .red-btn {
+      background: rgba(255,255,255,.1);
+      color: #fff; border-radius: 12px;
+      padding: .45rem .85rem; font-size: .82rem;
+      text-decoration: none; font-weight: 700;
+      transition: background .2s;
+      display: flex; align-items: center; gap: .3rem;
+    }
+    .red-btn:hover { background: var(--rosa); color: #fff; }
+    .footer-bottom {
+      text-align: center; margin-top: 2.5rem;
+      padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,.1);
+      font-size: .8rem; color: rgba(255,255,255,.4);
+    }
 
-    --text:   #f0eeff;
-    --muted:  #7a7a9a;
-    --radius: 18px;
-    --radius-sm: 10px;
-    --shadow: 0 8px 40px rgba(0,0,0,0.6);
-  }
+    /* =============================================
+       BOTÓN FLOTANTE CARRITO (móvil)
+    ============================================= */
+    .fab-carrito {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      z-index: 800;
+      background: linear-gradient(135deg, var(--rosa), var(--morado));
+      color: #fff; border: none; border-radius: 50px;
+      padding: .8rem 1.4rem; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: .95rem; cursor: pointer;
+      box-shadow: 0 8px 28px rgba(165,107,255,.45);
+      display: flex; align-items: center; gap: .5rem;
+      transition: transform .2s;
+    }
+    .fab-carrito:hover { transform: scale(1.06); }
+    .fab-badge {
+      background: var(--verde); color: var(--texto);
+      border-radius: 50%; width: 22px; height: 22px;
+      display: grid; place-items: center; font-size: .75rem; font-weight: 900;
+    }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* =============================================
+       TOAST NOTIFICACIÓN
+    ============================================= */
+    .toast {
+      position: fixed; bottom: 5.5rem; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--texto); color: #fff;
+      border-radius: 50px; padding: .7rem 1.5rem;
+      font-size: .88rem; font-weight: 700;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      opacity: 0; transition: opacity .25s, transform .25s;
+      z-index: 2000; white-space: nowrap;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Noise texture overlay */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none; z-index: 0;
-  }
-
-  /* =============================================
-     LAYOUT
-  ============================================= */
-  .app-shell { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
-
-  /* ---- HEADER ---- */
-  header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 28px;
-    background: rgba(10,10,15,0.8);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 100;
-  }
-  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; letter-spacing: -0.5px; }
-  .logo span { background: linear-gradient(90deg, var(--pink), var(--purple), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .logo small { display: block; font-size: 0.65rem; font-weight: 400; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; -webkit-text-fill-color: var(--muted); }
-
-  /* ---- TABS ---- */
-  nav { display: flex; gap: 6px; }
-  .tab-btn {
-    padding: 8px 18px; border-radius: 50px; border: none; cursor: pointer;
-    font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500;
-    background: var(--glass); color: var(--muted);
-    border: 1px solid var(--border);
-    transition: all 0.25s;
-  }
-  .tab-btn.active {
-    background: linear-gradient(135deg, var(--pink), var(--purple));
-    color: #fff; border-color: transparent;
-    box-shadow: 0 0 20px rgba(155,63,255,0.35);
-  }
-  .tab-btn:hover:not(.active) { color: var(--text); border-color: var(--purple); }
-
-  /* ---- SECTIONS ---- */
-  .section { display: none; padding: 28px; animation: fadeIn 0.3s ease; }
-  .section.active { display: block; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-  /* =============================================
-     UTILITY COMPONENTS
-  ============================================= */
-  .card {
-    background: var(--glass);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    backdrop-filter: blur(12px);
-    padding: 20px;
-  }
-
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 10px 20px; border-radius: 50px; border: none; cursor: pointer;
-    font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
-    transition: all 0.2s; letter-spacing: 0.2px;
-  }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--pink), var(--purple));
-    color: #fff; box-shadow: 0 0 24px rgba(255,63,164,0.3);
-  }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 32px rgba(255,63,164,0.5); }
-  .btn-success {
-    background: linear-gradient(135deg, var(--green), #00c896);
-    color: #0a0a0f; box-shadow: 0 0 24px rgba(63,255,164,0.3); font-weight: 700;
-  }
-  .btn-success:hover { transform: translateY(-2px); box-shadow: 0 0 32px rgba(63,255,164,0.5); }
-  .btn-danger { background: rgba(255,60,80,0.15); color: #ff3c50; border: 1px solid rgba(255,60,80,0.3); }
-  .btn-danger:hover { background: rgba(255,60,80,0.25); }
-  .btn-ghost { background: var(--glass); color: var(--muted); border: 1px solid var(--border); }
-  .btn-ghost:hover { color: var(--text); border-color: var(--blue); }
-  .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
-  .btn:active { transform: scale(0.97); }
-
-  input, select, textarea {
-    background: var(--glass-b); border: 1px solid var(--border); border-radius: var(--radius-sm);
-    color: var(--text); padding: 10px 14px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
-    outline: none; transition: border-color 0.2s; width: 100%;
-  }
-  input:focus, select:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(155,63,255,0.15); }
-  select option { background: var(--bg3); }
-  label { font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 6px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
-
-  h2 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.3rem; margin-bottom: 20px; }
-  h3 { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 1rem; margin-bottom: 12px; }
-
-  /* Neon accent text */
-  .accent-pink   { color: var(--pink); }
-  .accent-blue   { color: var(--blue); }
-  .accent-green  { color: var(--green); }
-  .accent-purple { color: var(--purple); }
-
-  /* =============================================
-     POS SECTION
-  ============================================= */
-  .pos-grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
-  @media (max-width: 900px) { .pos-grid { grid-template-columns: 1fr; } }
-
-  /* Product catalog */
-  .catalog-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 16px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 12px; }
-
-  .product-btn {
-    background: var(--glass);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 14px;
-    cursor: pointer; text-align: center;
-    transition: all 0.2s; position: relative; overflow: hidden;
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-  }
-  .product-btn::before {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, var(--pink), var(--purple));
-    opacity: 0; transition: opacity 0.2s;
-  }
-  .product-btn:hover { transform: translateY(-3px); border-color: var(--pink); box-shadow: 0 8px 32px rgba(255,63,164,0.2); }
-  .product-btn:hover::before { opacity: 0.08; }
-  .product-btn:active { transform: scale(0.96); }
-  .product-btn .emoji { font-size: 2rem; position: relative; z-index: 1; }
-  .product-btn .p-name { font-size: 0.82rem; font-weight: 500; color: var(--text); position: relative; z-index: 1; }
-  .product-btn .p-price {
-    font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700;
-    color: var(--pink); position: relative; z-index: 1;
-  }
-
-  /* Ticket */
-  .ticket-card { display: flex; flex-direction: column; gap: 16px; }
-  .ticket-header { display: flex; align-items: center; justify-content: space-between; }
-  .ticket-items { max-height: 340px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
-  .ticket-items::-webkit-scrollbar { width: 4px; }
-  .ticket-items::-webkit-scrollbar-track { background: transparent; }
-  .ticket-items::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-  .ticket-item {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--glass-b); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 10px 12px;
-    animation: slideIn 0.2s ease;
-  }
-  @keyframes slideIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
-  .ticket-item .ti-name { flex: 1; font-size: 0.88rem; font-weight: 500; }
-  .ticket-item .ti-sub { font-family: 'Syne', sans-serif; font-size: 0.88rem; color: var(--green); font-weight: 600; white-space: nowrap; }
-  .qty-ctrl { display: flex; align-items: center; gap: 6px; }
-  .qty-ctrl button {
-    width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border);
-    background: var(--glass); color: var(--text); cursor: pointer; font-size: 1rem;
-    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
-  }
-  .qty-ctrl button:hover { background: var(--purple); border-color: var(--purple); }
-  .qty-ctrl .qty { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; width: 20px; text-align: center; }
-
-  .ticket-empty { text-align: center; color: var(--muted); padding: 40px 0; font-size: 0.9rem; }
-  .ticket-empty .emoji-big { font-size: 3rem; margin-bottom: 8px; }
-
-  .ticket-footer { border-top: 1px solid var(--border); padding-top: 14px; }
-  .ticket-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-  .ticket-total span:first-child { color: var(--muted); font-size: 0.9rem; }
-  .ticket-total .total-num {
-    font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800;
-    background: linear-gradient(90deg, var(--green), var(--blue));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
-  .btn-cobrar { width: 100%; padding: 16px; font-size: 1.05rem; font-weight: 700; border-radius: var(--radius); }
-
-  /* =============================================
-     ACCOUNTING SECTION
-  ============================================= */
-  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
-  @media (max-width: 640px) { .stats-grid { grid-template-columns: 1fr; } }
-
-  .stat-card {
-    background: var(--glass); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 22px 20px; position: relative; overflow: hidden;
-  }
-  .stat-card::after {
-    content: ''; position: absolute; bottom: -30px; right: -20px;
-    width: 90px; height: 90px; border-radius: 50%;
-    opacity: 0.08;
-  }
-  .stat-card.ventas::after  { background: var(--blue);   }
-  .stat-card.gastos::after  { background: var(--pink);   }
-  .stat-card.ganancia::after{ background: var(--green);  }
-
-  .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
-  .stat-value {
-    font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; line-height: 1;
-  }
-  .stat-card.ventas  .stat-value { color: var(--blue);  }
-  .stat-card.gastos  .stat-value { color: var(--pink);  }
-  .stat-card.ganancia .stat-value { color: var(--green); }
-  .stat-icon { font-size: 1.5rem; margin-bottom: 10px; }
-
-  /* Accounting layout */
-  .acc-grid { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
-  @media (max-width: 900px) { .acc-grid { grid-template-columns: 1fr; } }
-
-  /* Expense form */
-  .form-group { margin-bottom: 14px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  /* History list */
-  .mov-list { display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto; padding-right: 4px; }
-  .mov-list::-webkit-scrollbar { width: 4px; }
-  .mov-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-  .mov-item {
-    display: flex; align-items: center; gap: 12px;
-    background: var(--glass); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 12px 14px;
-  }
-  .mov-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .mov-dot.venta  { background: var(--blue);  box-shadow: 0 0 8px var(--blue); }
-  .mov-dot.gasto  { background: var(--pink);  box-shadow: 0 0 8px var(--pink); }
-  .mov-desc { flex: 1; }
-  .mov-desc .m-title { font-size: 0.88rem; font-weight: 500; }
-  .mov-desc .m-time  { font-size: 0.72rem; color: var(--muted); }
-  .mov-amount { font-family: 'Syne', sans-serif; font-size: 0.92rem; font-weight: 700; white-space: nowrap; }
-  .mov-amount.venta { color: var(--blue); }
-  .mov-amount.gasto { color: var(--pink); }
-
-  .mov-del-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--muted); font-size: 0.85rem; padding: 4px 6px;
-    border-radius: 6px; transition: all 0.15s; flex-shrink: 0;
-    opacity: 0; /* oculto por defecto, aparece en hover del item */
-  }
-  .mov-item:hover .mov-del-btn { opacity: 1; }
-  .mov-del-btn:hover { background: rgba(255,60,80,0.15); color: #ff3c50; }
-
-  .mov-empty { text-align: center; color: var(--muted); padding: 30px; font-size: 0.88rem; }
-
-  /* =============================================
-     UTILITY ACTIONS BAR
-  ============================================= */
-  .actions-bar {
-    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px;
-    padding-top: 20px; border-top: 1px solid var(--border);
-  }
-
-  /* =============================================
-     TOAST
-  ============================================= */
-  #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-  .toast {
-    background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 12px 18px; font-size: 0.88rem; min-width: 220px;
-    display: flex; align-items: center; gap: 10px;
-    animation: toastIn 0.3s ease; box-shadow: var(--shadow);
-    backdrop-filter: blur(12px);
-  }
-  .toast.success { border-left: 3px solid var(--green); }
-  .toast.error   { border-left: 3px solid var(--pink); }
-  .toast.info    { border-left: 3px solid var(--blue); }
-  @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-
-  /* =============================================
-     MODAL CONFIRM
-  ============================================= */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(6px); z-index: 999;
-    align-items: center; justify-content: center;
-    display: none;
-  }
-  .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
-  .modal-box {
-    background: var(--bg3); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 32px; max-width: 380px; width: 90%;
-    text-align: center; box-shadow: var(--shadow);
-  }
-  .modal-box h3 { font-size: 1.2rem; margin-bottom: 10px; }
-  .modal-box p { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
-  .modal-actions { display: flex; gap: 10px; justify-content: center; }
-
-  /* =============================================
-     SCROLLBAR GLOBAL
-  ============================================= */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-  /* =============================================
-     MODAL CONTRASEÑA
-  ============================================= */
-  .pwd-input-wrap { position: relative; margin-bottom: 20px; }
-  .pwd-input-wrap input { padding-right: 44px; letter-spacing: 3px; font-size: 1.1rem; text-align: center; }
-  .pwd-toggle {
-    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; cursor: pointer; color: var(--muted); font-size: 1.1rem;
-    transition: color 0.2s;
-  }
-  .pwd-toggle:hover { color: var(--text); }
-  .pwd-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 6px; }
-  .pwd-dot-ind {
-    width: 10px; height: 10px; border-radius: 50%;
-    border: 2px solid var(--border); transition: all 0.2s;
-  }
-  .pwd-dot-ind.filled { background: var(--purple); border-color: var(--purple); box-shadow: 0 0 8px var(--purple); }
-  .shake { animation: shake 0.4s ease; }
-  @keyframes shake {
-    0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)}
-    60%{transform:translateX(-5px)} 80%{transform:translateX(5px)}
-  }
-  .pwd-error { color: var(--pink); font-size: 0.82rem; margin-top: -12px; margin-bottom: 14px; min-height: 18px; text-align:center; }
-  .pwd-hint { font-size: 0.75rem; color: var(--muted); text-align: center; margin-top: 12px; }
-
-  /* =============================================
-     GRÁFICA
-  ============================================= */
-  .chart-section { margin-top: 28px; }
-  .chart-card { padding: 24px; }
-  .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-  .chart-tabs { display: flex; gap: 6px; }
-  .chart-tab {
-    padding: 6px 14px; border-radius: 50px; border: 1px solid var(--border);
-    background: var(--glass); color: var(--muted); cursor: pointer;
-    font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 500;
-    transition: all 0.2s;
-  }
-  .chart-tab.active { background: linear-gradient(135deg,var(--blue),var(--purple)); color:#fff; border-color:transparent; }
-  .chart-wrap { position: relative; height: 280px; }
-</style>
+    /* =============================================
+       RESPONSIVE
+    ============================================= */
+    @media (max-width: 640px) {
+      nav { display: none; }
+      .hamburger { display: flex; }
+      .hero { padding: 3rem 1rem 2.5rem; }
+      .productos-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
+      .card-emoji { font-size: 3rem; padding: 1rem .75rem .5rem; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="app-shell">
-
-  <!-- HEADER -->
-  <header>
-    <div class="logo">
-      🍦 <span>Nevería Estelita</span>
-      <small>POS & Contabilidad</small>
-    </div>
-    <nav style="display:flex;align-items:center;gap:12px;">
-      <span id="conexion-badge" style="font-size:0.7rem;color:var(--muted);white-space:nowrap;">⏳ Conectando...</span>
-      <button class="tab-btn active" onclick="showTab('pos')">🧾 Caja</button>
-      <button class="tab-btn" onclick="showTab('acc')">📊 Contabilidad</button>
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <div class="logo-icon">🍦</div>
+      <span class="logo-name">Estelita</span>
+    </a>
+    <nav>
+      <a href="#menu">Menú</a>
+      <a href="#nosotros">Nosotros</a>
+      <a href="#contacto">Contacto</a>
+      <button class="btn-carrito-nav" onclick="abrirCarrito()">
+        🛒 Carrito
+        <span class="carrito-badge" id="badge-nav">0</span>
+      </button>
     </nav>
-  </header>
+    <div class="hamburger" onclick="toggleMenu()" id="hamburger">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#menu"      onclick="toggleMenu()">🍦 Menú</a>
+    <a href="#nosotros"  onclick="toggleMenu()">💜 Nosotros</a>
+    <a href="#contacto"  onclick="toggleMenu()">📍 Contacto</a>
+    <button class="btn-carrito-nav" onclick="abrirCarrito(); toggleMenu()">
+      🛒 Ver carrito
+      <span class="carrito-badge" id="badge-mobile">0</span>
+    </button>
+  </div>
+</header>
 
-  <!-- Banner de error Firebase (visible solo si las credenciales fallan) -->
-  <div id="firebase-banner" style="display:none;background:rgba(255,63,164,0.12);border-bottom:1px solid rgba(255,63,164,0.3);color:#ff3fa4;font-size:0.82rem;padding:10px 28px;text-align:center;position:relative;z-index:99;"></div>
+<!-- ===== HERO ===== -->
+<div style="max-width:1100px;margin:0 auto;">
+  <section class="hero" id="inicio">
+    <div class="hero-badge">✨ Artesanal &amp; Fresquísimo</div>
+    <h1>Los mejores helados<br>de la colonia</h1>
+    <p>Elaborados con amor, ingredientes frescos y una chispa especial que nos hace únicos. ¡Tu antojo favorito a un paso de casa!</p>
+    <div class="hero-btns">
+      <a href="#menu" class="btn-primary">🍦 Ver Menú</a>
+      <button class="btn-secondary" onclick="abrirCarrito()">🛒 Mi carrito</button>
+    </div>
+    <div class="hero-emojis">🍦🧁🍡🍧🥭🍓🍋</div>
+  </section>
+</div>
 
-  <!-- ======================================
-       SECCIÓN: PUNTO DE VENTA
-  ======================================= -->
-  <section id="sec-pos" class="section active">
-    <div class="pos-grid">
+<!-- ===== MENÚ ===== -->
+<section id="menu">
+  <div class="section-title">
+    <h2>Nuestro Menú</h2>
+    <p>Escoge tu favorito y arma tu pedido 😍</p>
+  </div>
 
-      <!-- Catálogo de Productos -->
-      <div>
-        <p class="catalog-title">🧊 Catálogo de Productos</p>
-        <div class="catalog-grid" id="catalog-grid">
-          <!-- Generado por JS -->
-        </div>
+  <div class="categorias">
+    <button class="cat-btn activo" onclick="filtrar('todos', this)">🌈 Todos</button>
+    <button class="cat-btn" onclick="filtrar('helado', this)">🍦 Helados</button>
+    <button class="cat-btn" onclick="filtrar('paleta', this)">🍡 Paletas</button>
+    <button class="cat-btn" onclick="filtrar('bebida', this)">🥤 Bebidas</button>
+    <button class="cat-btn" onclick="filtrar('antojo', this)">🍟 Antojos</button>
+  </div>
+
+  <div class="productos-grid" id="productos-grid">
+    <!-- Productos generados por JS -->
+  </div>
+</section>
+
+<!-- ===== NOSOTROS ===== -->
+<section id="nosotros">
+  <div class="section-title">
+    <h2>¿Por qué Estelita?</h2>
+    <p>Más que una nevería, somos parte de la colonia</p>
+  </div>
+  <div class="nosotros-grid">
+    <div class="info-card">
+      <span class="ic-icon">🌿</span>
+      <h3>Ingredientes Naturales</h3>
+      <p>Usamos frutas frescas de temporada y productos locales para garantizar el mejor sabor.</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">❤️</span>
+      <h3>Hecho con Amor</h3>
+      <p>Cada paleta y helado es preparado artesanalmente por nuestra familia cada día.</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">🚀</span>
+      <h3>Pedido Fácil</h3>
+      <p>Arma tu pedido aquí y mándalo directo por WhatsApp. ¡Así de sencillo!</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">💰</span>
+      <h3>Precios Justos</h3>
+      <p>Calidad premium a precios accesibles para toda la familia de la colonia.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer id="contacto">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4>🍦 Nevería Estelita</h4>
+      <p>El sabor que nos une a todos en la colonia. Visítanos y endúlzate el día.</p>
+      <div class="redes" style="margin-top:1rem;">
+        <a href="#" class="red-btn">📸 Instagram</a>
+        <a href="#" class="red-btn">📘 Facebook</a>
+        <a href="#" class="red-btn">🎵 TikTok</a>
       </div>
+    </div>
+    <div class="footer-col">
+      <h4>📍 Encuéntranos</h4>
+      <p>Calle Principal #42<br>Col. La Esperanza<br>Lerdo, Dgo.</p>
+    </div>
+    <div class="footer-col">
+      <h4>🕐 Horarios</h4>
+      <p>
+        Lunes – Viernes<br>
+        <strong style="color:#fff;">10:00 am – 9:00 pm</strong><br><br>
+        Sábado y Domingo<br>
+        <strong style="color:#fff;">9:00 am – 10:00 pm</strong>
+      </p>
+    </div>
+    <div class="footer-col">
+      <h4>📞 Contáctanos</h4>
+      <!-- ⚠️ REEMPLAZA con tu número real -->
+      <a href="https://wa.me/521XXXXXXXXXX">💬 WhatsApp</a>
+      <p style="margin-top:.5rem;font-size:.8rem;opacity:.6;">
+        (sustituye XXXXXXXXXX por tu número real en el código)
+      </p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    © 2025 Nevería Estelita · Hecho con 💜 en la colonia
+  </div>
+</footer>
 
-      <!-- Ticket Actual -->
-      <div class="card ticket-card">
-        <div class="ticket-header">
-          <h3>🧾 Ticket Actual</h3>
-          <button class="btn btn-ghost btn-sm" onclick="clearTicket()">🗑 Limpiar</button>
-        </div>
+<!-- ===== CARRITO PANEL ===== -->
+<div class="carrito-overlay" id="carrito-overlay" onclick="cerrarCarrito()"></div>
+<aside class="carrito-panel" id="carrito-panel">
+  <div class="carrito-header">
+    <h2>🛒 Tu Carrito</h2>
+    <button class="btn-cerrar" onclick="cerrarCarrito()">✕</button>
+  </div>
+  <div class="carrito-items" id="carrito-items">
+    <!-- ítems renderizados por JS -->
+  </div>
+  <div class="carrito-footer">
+    <div class="nombre-input-wrap">
+      <label for="cliente-nombre">👤 Tu nombre <span style="color:var(--rosa)">*</span></label>
+      <input type="text" id="cliente-nombre" placeholder="Ej: Carlos, Laura..." maxlength="40"
+        oninput="validarNombre()" />
+      <span class="nombre-error" id="nombre-error">⚠️ Escribe tu nombre para continuar</span>
+    </div>
+    <div class="total-row">
+      <span class="total-label">Total a pagar:</span>
+      <span class="total-monto" id="total-monto">$0</span>
+    </div>
+    <button class="btn-whatsapp" id="btn-whatsapp" onclick="hacerPedidoWhatsApp()" disabled>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.117 1.522 5.849L.078 23.903a.5.5 0 0 0 .602.602l6.054-1.444A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.9a9.9 9.9 0 0 1-5.03-1.375l-.36-.214-3.733.891.907-3.618-.235-.373A9.9 9.9 0 0 1 2.1 12C2.1 6.533 6.533 2.1 12 2.1S21.9 6.533 21.9 12 17.467 21.9 12 21.9z"/>
+      </svg>
+      Hacer pedido por WhatsApp
+    </button>
+    <p class="confirmacion-aviso">✅ Tu pedido se preparará hasta recibir confirmación por WhatsApp</p>
+  </div>
+</aside>
 
-        <div id="ticket-items" class="ticket-items">
-          <div class="ticket-empty">
-            <div class="emoji-big">🍦</div>
-            <p>Agrega productos<br>para comenzar</p>
-          </div>
-        </div>
+<!-- ===== FAB CARRITO (móvil) ===== -->
+<button class="fab-carrito" onclick="abrirCarrito()">
+  🛒 <span id="fab-total">$0</span>
+  <span class="fab-badge" id="fab-badge">0</span>
+</button>
 
-        <div class="ticket-footer">
-          <div class="ticket-total">
-            <span>Total:</span>
-            <span class="total-num" id="ticket-total">$0</span>
-          </div>
-          <button class="btn btn-success btn-cobrar" onclick="cobrar()">
-            💳 Cobrar <span id="btn-cobrar-total">$0</span>
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast"></div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+// =============================================
+//  CATÁLOGO DE PRODUCTOS
+// =============================================
+const catalogo = [
+  { id:1,  emoji:'🍦', nombre:'Helado de Vainilla',    precio:25, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Cremoso y suave con extracto de vainilla natural.' },
+  { id:2,  emoji:'🍫', nombre:'Helado de Chocolate',   precio:25, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Intenso sabor a cacao, irresistible en cada cucharada.' },
+  { id:3,  emoji:'🍓', nombre:'Helado de Fresa',        precio:25, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Elaborado con fresas naturales de temporada.' },
+  { id:4,  emoji:'🍋', nombre:'Helado de Limón',        precio:28, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Fresco, ácido y perfecto para el calor.' },
+  { id:5,  emoji:'🥭', nombre:'Helado de Mango',        precio:28, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Con mango manila de temporada, dulce y aromático.' },
+  { id:6,  emoji:'🍡', nombre:'Paleta de Fresa',        precio:18, categoria:'paleta',  tag:'tag-paleta', tagLabel:'Paleta',  desc:'Paleta de hielo con trozos de fresa real.' },
+  { id:7,  emoji:'🍋', nombre:'Paleta de Tamarindo',    precio:18, categoria:'paleta',  tag:'tag-paleta', tagLabel:'Paleta',  desc:'Agridulce y con un toque de chile, la favorita.' },
+  { id:8,  emoji:'🥥', nombre:'Paleta de Coco',         precio:20, categoria:'paleta',  tag:'tag-paleta', tagLabel:'Paleta',  desc:'Cremosa paleta de coco con pulpa real.' },
+  { id:9,  emoji:'🍺', nombre:'Paleta de Pepino',       precio:18, categoria:'paleta',  tag:'tag-paleta', tagLabel:'Paleta',  desc:'Refrescante paleta de pepino con limón y chile.' },
+  { id:10, emoji:'🥤', nombre:'Mangonada',               precio:45, categoria:'bebida',  tag:'tag-bebida', tagLabel:'Bebida',  desc:'Mango fresco, chamoy, chile y tamarindo. ¡Clásico!' },
+  { id:11, emoji:'🫙', nombre:'Raspado de Jamaica',      precio:30, categoria:'bebida',  tag:'tag-bebida', tagLabel:'Bebida',  desc:'Raspado gigante con agua de jamaica preparada.' },
+  { id:12, emoji:'🟤', nombre:'Raspado de Tamarindo',    precio:30, categoria:'bebida',  tag:'tag-bebida', tagLabel:'Bebida',  desc:'Raspado bañado en pulpa de tamarindo con chile.' },
+  { id:13, emoji:'🍟', nombre:'Nachos con Queso',        precio:35, categoria:'antojo',  tag:'tag-antojo', tagLabel:'Antojo',  desc:'Totopos crujientes con queso amarillo y jalapeños.' },
+  { id:14, emoji:'🫘', nombre:'Elote en Vaso',           precio:28, categoria:'antojo',  tag:'tag-antojo', tagLabel:'Antojo',  desc:'Elote cocido con crema, queso, mayonesa y chile.' },
+  { id:15, emoji:'🌽', nombre:'Esquite Especial',        precio:32, categoria:'antojo',  tag:'tag-antojo', tagLabel:'Antojo',  desc:'Esquite guisado con epazote, mayonesa y limón.' },
+  { id:16, emoji:'🍧', nombre:'Gaznate',                 precio:22, categoria:'antojo',  tag:'tag-antojo', tagLabel:'Antojo',  desc:'Barquillo crujiente relleno de crema y merengue.' },
+];
+
+// =============================================
+//  CARRITO (estado)
+// =============================================
+let carrito = [];   // [ { id, nombre, precio, emoji, cantidad } ]
+
+// =============================================
+//  RENDER PRODUCTOS
+// =============================================
+function renderProductos(lista) {
+  const grid = document.getElementById('productos-grid');
+  grid.innerHTML = '';
+  lista.forEach(p => {
+    const enCarrito = carrito.find(c => c.id === p.id);
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.dataset.categoria = p.categoria;
+    div.innerHTML = `
+      <div class="card-emoji">${p.emoji}</div>
+      <div class="card-body">
+        <span class="card-tag ${p.tag}">${p.tagLabel}</span>
+        <h3>${p.nombre}</h3>
+        <p>${p.desc}</p>
+        <div class="card-footer">
+          <span class="precio">$${p.precio}</span>
+          <button class="btn-agregar ${enCarrito ? 'agregado' : ''}"
+            onclick="agregarAlCarrito(${p.id})" id="btn-prod-${p.id}">
+            ${enCarrito ? '✓ Agregado' : '+ Agregar'}
           </button>
         </div>
+      </div>`;
+    grid.appendChild(div);
+  });
+}
+
+renderProductos(catalogo);
+
+// =============================================
+//  FILTRO POR CATEGORÍA
+// =============================================
+function filtrar(cat, btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('activo'));
+  btn.classList.add('activo');
+  const lista = cat === 'todos' ? catalogo : catalogo.filter(p => p.categoria === cat);
+  renderProductos(lista);
+}
+
+// =============================================
+//  LÓGICA DEL CARRITO
+// =============================================
+function agregarAlCarrito(id) {
+  const prod = catalogo.find(p => p.id === id);
+  const existente = carrito.find(c => c.id === id);
+  if (existente) {
+    existente.cantidad++;
+  } else {
+    carrito.push({ ...prod, cantidad: 1 });
+  }
+  // Actualizar botón en la tarjeta
+  const btnProd = document.getElementById(`btn-prod-${id}`);
+  if (btnProd) { btnProd.textContent = '✓ Agregado'; btnProd.classList.add('agregado'); }
+  actualizarUI();
+  mostrarToast(`${prod.emoji} ${prod.nombre} agregado al carrito`);
+}
+
+function cambiarCantidad(id, delta) {
+  const item = carrito.find(c => c.id === id);
+  if (!item) return;
+  item.cantidad += delta;
+  if (item.cantidad <= 0) eliminarDelCarrito(id);
+  else actualizarUI();
+}
+
+function eliminarDelCarrito(id) {
+  carrito = carrito.filter(c => c.id !== id);
+  // Restablecer botón en tarjeta
+  const btnProd = document.getElementById(`btn-prod-${id}`);
+  if (btnProd) { btnProd.textContent = '+ Agregar'; btnProd.classList.remove('agregado'); }
+  actualizarUI();
+}
+
+function totalItems() { return carrito.reduce((s, c) => s + c.cantidad, 0); }
+function totalPrecio() { return carrito.reduce((s, c) => s + c.precio * c.cantidad, 0); }
+
+// =============================================
+//  ACTUALIZAR TODA LA UI
+// =============================================
+function actualizarUI() {
+  const total  = totalPrecio();
+  const items  = totalItems();
+  const fmtPrecio = `$${total}`;
+
+  // Badges nav
+  document.getElementById('badge-nav').textContent    = items;
+  document.getElementById('badge-mobile').textContent = items;
+  // FAB
+  document.getElementById('fab-badge').textContent    = items;
+  document.getElementById('fab-total').textContent    = fmtPrecio;
+  // Total en panel
+  document.getElementById('total-monto').textContent  = fmtPrecio;
+  // Botón WhatsApp
+  actualizarBotonWhatsApp();
+
+  renderCarrito();
+}
+
+// =============================================
+//  RENDER PANEL CARRITO
+// =============================================
+function renderCarrito() {
+  const contenedor = document.getElementById('carrito-items');
+  if (carrito.length === 0) {
+    contenedor.innerHTML = `
+      <div class="carrito-vacio">
+        <span class="emoji-vacio">🛒</span>
+        <p>Tu carrito está vacío.<br>¡Agrega algo delicioso!</p>
+      </div>`;
+    return;
+  }
+  contenedor.innerHTML = carrito.map(item => `
+    <div class="item-carrito">
+      <div class="item-emoji">${item.emoji}</div>
+      <div class="item-info">
+        <strong>${item.nombre}</strong>
+        <span class="item-precio">$${item.precio} c/u · Subtotal: $${item.precio * item.cantidad}</span>
       </div>
-
-    </div>
-  </section>
-
-  <!-- ======================================
-       SECCIÓN: CONTABILIDAD
-  ======================================= -->
-  <section id="sec-acc" class="section">
-
-    <!-- Stats -->
-    <div class="stats-grid">
-      <div class="stat-card ventas">
-        <div class="stat-icon">💳</div>
-        <div class="stat-label">Total Ventas</div>
-        <div class="stat-value" id="stat-ventas">$0</div>
+      <div class="item-controles">
+        <button class="btn-qty" onclick="cambiarCantidad(${item.id}, -1)">−</button>
+        <span class="item-qty">${item.cantidad}</span>
+        <button class="btn-qty" onclick="cambiarCantidad(${item.id}, +1)">+</button>
+        <button class="btn-eliminar" onclick="eliminarDelCarrito(${item.id})" title="Eliminar">🗑</button>
       </div>
-      <div class="stat-card gastos">
-        <div class="stat-icon">🧾</div>
-        <div class="stat-label">Total Gastos</div>
-        <div class="stat-value" id="stat-gastos">$0</div>
-      </div>
-      <div class="stat-card ganancia">
-        <div class="stat-icon">📈</div>
-        <div class="stat-label">Ganancia Neta</div>
-        <div class="stat-value" id="stat-ganancia">$0</div>
-      </div>
-    </div>
+    </div>`).join('');
+}
 
-    <div class="acc-grid">
+// =============================================
+//  ABRIR / CERRAR PANEL
+// =============================================
+function abrirCarrito() {
+  document.getElementById('carrito-panel').classList.add('abierto');
+  document.getElementById('carrito-overlay').classList.add('abierto');
+  document.body.style.overflow = 'hidden';
+}
+function cerrarCarrito() {
+  document.getElementById('carrito-panel').classList.remove('abierto');
+  document.getElementById('carrito-overlay').classList.remove('abierto');
+  document.body.style.overflow = '';
+}
 
-      <!-- Registrar Gasto -->
-      <div class="card">
-        <h3>➕ Registrar Gasto</h3>
-        <div class="form-group">
-          <label>Descripción</label>
-          <input type="text" id="gasto-desc" placeholder="Ej. Compra de hielo, vasos..." />
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Monto ($)</label>
-            <input type="number" id="gasto-monto" placeholder="0.00" min="0" step="0.01"/>
-          </div>
-          <div class="form-group">
-            <label>Categoría</label>
-            <select id="gasto-cat">
-              <option value="Insumos">🧊 Insumos</option>
-              <option value="Empaque">📦 Empaque</option>
-              <option value="Ingredientes">🍓 Ingredientes</option>
-              <option value="Servicios">💡 Servicios</option>
-              <option value="Limpieza">🧹 Limpieza</option>
-              <option value="Otro">🔖 Otro</option>
-            </select>
-          </div>
-        </div>
-        <button class="btn btn-primary" style="width:100%" onclick="registrarGasto()">
-          💾 Guardar Gasto
-        </button>
-      </div>
+// =============================================
+//  VALIDAR NOMBRE
+// =============================================
+function validarNombre() {
+  const input = document.getElementById('cliente-nombre');
+  const error = document.getElementById('nombre-error');
+  const nombre = input.value.trim();
+  if (nombre.length > 0) {
+    input.classList.remove('error');
+    error.classList.remove('visible');
+  }
+  actualizarBotonWhatsApp();
+}
 
-      <!-- Historial -->
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <h3 style="margin:0">📋 Últimos Movimientos</h3>
-          <span id="mov-count" style="font-size:0.75rem;color:var(--muted)">0 registros</span>
-        </div>
-        <div id="mov-list" class="mov-list">
-          <div class="mov-empty">Sin movimientos aún</div>
-        </div>
-      </div>
+function actualizarBotonWhatsApp() {
+  const nombre = document.getElementById('cliente-nombre').value.trim();
+  const btn = document.getElementById('btn-whatsapp');
+  btn.disabled = carrito.length === 0 || nombre.length === 0;
+}
 
-    </div>
+// =============================================
+//  PEDIDO POR WHATSAPP
+//  ⚠️ CAMBIA "521XXXXXXXXXX" por tu número real
+//  Formato: código de país + número sin espacios
+//  Ejemplo México: 5216181234567
+// =============================================
+const NUMERO_WHATSAPP = '521XXXXXXXXXX'; // <--- PON TU NÚMERO AQUÍ
 
-    <!-- Acciones de utilidad -->
-    <div class="actions-bar">
-      <button class="btn btn-ghost" onclick="exportCSV()">📥 Exportar CSV</button>
-      <button class="btn btn-ghost" onclick="exportTXT()">📄 Resumen TXT</button>
-      <button class="btn btn-danger" onclick="openModal()">🗑 Limpiar Todo</button>
-    </div>
+function hacerPedidoWhatsApp() {
+  if (carrito.length === 0) return;
+  const nombre = document.getElementById('cliente-nombre').value.trim();
+  if (!nombre) {
+    const input = document.getElementById('cliente-nombre');
+    const error = document.getElementById('nombre-error');
+    input.classList.add('error');
+    error.classList.add('visible');
+    input.focus();
+    return;
+  }
 
-    <!-- GRÁFICA -->
-    <div class="chart-section">
-      <div class="card chart-card">
-        <div class="chart-header">
-          <h3 style="margin:0">📊 Gráfica de Movimientos</h3>
-          <div class="chart-tabs">
-            <button class="chart-tab active" onclick="switchChart('barras', this)">📊 Barras</button>
-            <button class="chart-tab" onclick="switchChart('dona', this)">🍩 Dona</button>
-          </div>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="main-chart"></canvas>
-        </div>
-      </div>
-    </div>
+  const lineasProductos = carrito
+    .map(item => `  • ${item.cantidad}x ${item.nombre} — $${item.precio * item.cantidad}`)
+    .join('\n');
 
-  </section>
+  const mensaje =
+    `¡Hola! Soy *${nombre}* 👋\n` +
+    `Me gustaría hacer el siguiente pedido en *Nevería Estelita*:\n\n` +
+    `${lineasProductos}\n\n` +
+    `💰 *Total a pagar: $${totalPrecio()}*\n\n` +
+    `¿Pueden confirmarlo? ¡Gracias! 🍦`;
 
-</div><!-- end app-shell -->
+  const urlWhatsApp = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+  window.open(urlWhatsApp, '_blank');
+}
 
-<!-- TOAST -->
-<div id="toast-container"></div>
+// =============================================
+//  MENÚ HAMBURGUESA (MÓVIL)
+// =============================================
+function toggleMenu() {
+  const menu = document.getElementById('mobile-menu');
+  menu.classList.toggle('open');
+}
 
-<!-- MODAL CONTRASEÑA (para futuras acciones admin si se necesita) -->
-<div class="modal-overlay" id="pwd-modal">
-  <div class="modal-box">
-    <div style="font-size:2.5rem;margin-bottom:12px">🔐</div>
-    <h3>Acceso de Administrador</h3>
-    <p>Solo el dueño o encargado puede realizar esta acción.</p>
-    <div class="pwd-dots" id="pwd-dots">
-      <div class="pwd-dot-ind" id="d0"></div>
-      <div class="pwd-dot-ind" id="d1"></div>
-      <div class="pwd-dot-ind" id="d2"></div>
-      <div class="pwd-dot-ind" id="d3"></div>
-    </div>
-    <div class="pwd-input-wrap">
-      <input type="password" id="pwd-input" maxlength="4" placeholder="••••"
-        oninput="onPwdInput()" onkeydown="if(event.key==='Enter') verifyPwd()" autocomplete="off"/>
-      <button class="pwd-toggle" onclick="togglePwdVis()" id="pwd-eye">👁</button>
-    </div>
-    <div class="pwd-error" id="pwd-error"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closePwdModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="verifyPwd()">🔓 Entrar</button>
-    </div>
-    <p class="pwd-hint">¿Olvidaste la contraseña? Edita <code>ADMIN_PASSWORD</code> en el código.</p>
-  </div>
-</div>
-
-<!-- MODAL LIMPIAR TODO — contraseña + confirmación en un solo paso -->
-<div id="limpiar-modal" style="
-  display:none; position:fixed; inset:0; z-index:9999;
-  background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);
-  align-items:center; justify-content:center;
-">
-  <div style="
-    background:#1a1a28; border:1px solid rgba(255,255,255,0.1);
-    border-radius:18px; padding:32px; max-width:380px; width:90%;
-    text-align:center; box-shadow:0 8px 40px rgba(0,0,0,0.6);
-  ">
-    <div style="font-size:2.2rem;margin-bottom:10px">🗑️🔐</div>
-    <h3 style="font-family:'Syne',sans-serif;font-size:1.15rem;margin-bottom:8px">Limpiar Todo</h3>
-    <p style="color:#7a7a9a;font-size:0.88rem;margin-bottom:20px">
-      Ingresa la contraseña de administrador para borrar <strong style="color:#f0eeff">todos</strong> los datos permanentemente.
-    </p>
-    <input type="password" id="limpiar-pwd" maxlength="4" placeholder="Contraseña (4 dígitos)"
-      style="text-align:center;letter-spacing:4px;font-size:1.1rem;margin-bottom:10px"
-      onkeydown="if(event.key==='Enter') confirmarLimpiar()"
-      autocomplete="off"/>
-    <div id="limpiar-error" style="color:#ff3fa4;font-size:0.82rem;min-height:20px;margin-bottom:14px"></div>
-    <div style="display:flex;gap:10px;justify-content:center">
-      <button onclick="cerrarLimpiarModal()"
-        style="padding:10px 20px;border-radius:50px;border:1px solid rgba(255,255,255,0.1);
-               background:rgba(255,255,255,0.04);color:#7a7a9a;cursor:pointer;font-family:'DM Sans',sans-serif">
-        Cancelar
-      </button>
-      <button onclick="confirmarLimpiar()"
-        style="padding:10px 20px;border-radius:50px;border:none;
-               background:rgba(255,60,80,0.2);color:#ff3c50;border:1px solid rgba(255,60,80,0.35);
-               cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600">
-        🗑 Sí, borrar todo
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Script original eliminado: migrado a Firebase (type="module") arriba -->
-
-
-
+// =============================================
+//  TOAST
+// =============================================
+let toastTimeout;
+function mostrarToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
 </body>
 </html>
