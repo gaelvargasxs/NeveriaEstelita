@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nevería Estelita ✨</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* =============================================
+       VARIABLES Y RESET
+    ============================================= */
+    :root {
+      --rosa:    #FF6EB4;
+      --rosa-claro: #FFD6EC;
+      --azul:    #5BBFFF;
+      --azul-claro: #D6F0FF;
+      --morado:  #A56BFF;
+      --morado-claro: #E8D6FF;
+      --verde:   #4CD9A0;
+      --verde-claro: #C8F5E5;
+      --crema:   #FFFAF4;
+      --texto:   #2D1B4E;
+      --gris:    #7A6D8A;
+      --blanco:  #FFFFFF;
+      --sombra:  0 8px 32px rgba(165,107,255,.15);
+      --radio:   20px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--crema);
+      color: var(--texto);
+      overflow-x: hidden;
+    }
+
+    /* =============================================
+       FONDO DECORATIVO (burbujas pastel)
+    ============================================= */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: -1;
+      background:
+        radial-gradient(circle at 10% 20%,  rgba(255,110,180,.12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 10%,  rgba(91,191,255,.12)  0%, transparent 40%),
+        radial-gradient(circle at 80% 80%,  rgba(165,107,255,.10) 0%, transparent 40%),
+        radial-gradient(circle at 20% 85%,  rgba(76,217,160,.10)  0%, transparent 40%),
+        var(--crema);
+    }
+
+    /* =============================================
+       HEADER / NAV
+    ============================================= */
+    header {
+      position: sticky; top: 0; z-index: 900;
+      background: rgba(255,250,244,.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 2px solid var(--rosa-claro);
+      padding: 0 1.25rem;
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .logo {
+      display: flex; align-items: center; gap: .5rem;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--rosa), var(--morado));
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-size: 1.3rem;
+      box-shadow: 0 4px 12px rgba(165,107,255,.35);
+    }
+    .logo-name {
+      font-family: 'Pacifico', cursive;
+      font-size: 1.35rem;
+      background: linear-gradient(90deg, var(--rosa), var(--morado));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    nav { display: flex; gap: 1.5rem; align-items: center; }
+    nav a {
+      text-decoration: none; color: var(--gris);
+      font-weight: 700; font-size: .9rem;
+      transition: color .2s;
+    }
+    nav a:hover { color: var(--morado); }
+    .btn-carrito-nav {
+      background: linear-gradient(135deg, var(--rosa), var(--morado));
+      color: #fff; border: none; border-radius: 50px;
+      padding: .45rem 1rem; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: .85rem; cursor: pointer;
+      display: flex; align-items: center; gap: .4rem;
+      box-shadow: 0 4px 14px rgba(165,107,255,.3);
+      transition: transform .18s, box-shadow .18s;
+    }
+    .btn-carrito-nav:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(165,107,255,.4); }
+    .carrito-badge {
+      background: var(--verde); color: var(--texto);
+      border-radius: 50%; width: 20px; height: 20px;
+      display: grid; place-items: center; font-size: .72rem;
+      font-weight: 900; line-height: 1;
+    }
+    /* Hamburger */
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+    .hamburger span { display: block; width: 24px; height: 2.5px; background: var(--morado); border-radius: 4px; transition: .3s; }
+    .mobile-menu {
+      display: none; flex-direction: column; gap: .75rem;
+      padding: .75rem 1.25rem 1rem;
+      border-top: 1px solid var(--rosa-claro);
+    }
+    .mobile-menu a { color: var(--texto); font-weight: 700; text-decoration: none; }
+    .mobile-menu.open { display: flex; }
+
+    /* =============================================
+       HERO
+    ============================================= */
+    .hero {
+      padding: 5rem 1.25rem 4rem;
+      text-align: center; position: relative;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: var(--azul-claro); color: var(--azul);
+      border-radius: 50px; padding: .35rem 1rem;
+      font-size: .8rem; font-weight: 800; letter-spacing: .05em;
+      margin-bottom: 1.25rem; text-transform: uppercase;
+    }
+    .hero h1 {
+      font-family: 'Pacifico', cursive;
+      font-size: clamp(2.2rem, 7vw, 4.2rem);
+      line-height: 1.2;
+      background: linear-gradient(135deg, var(--rosa), var(--morado) 50%, var(--azul));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      max-width: 520px; margin: 0 auto 2rem;
+      color: var(--gris); font-size: 1.1rem; line-height: 1.7;
+    }
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--rosa), var(--morado));
+      color: #fff; text-decoration: none;
+      border-radius: 50px; padding: .8rem 2rem;
+      font-weight: 800; font-size: 1rem;
+      box-shadow: 0 6px 20px rgba(255,110,180,.4);
+      transition: transform .2s, box-shadow .2s;
+      border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(255,110,180,.5); }
+    .btn-secondary {
+      background: transparent;
+      border: 2.5px solid var(--morado);
+      color: var(--morado);
+      border-radius: 50px; padding: .8rem 2rem;
+      font-weight: 800; font-size: 1rem; text-decoration: none;
+      transition: background .2s, color .2s;
+    }
+    .btn-secondary:hover { background: var(--morado); color: #fff; }
+    .hero-emojis {
+      margin-top: 3rem;
+      font-size: 3rem;
+      display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;
+      animation: flotar 3s ease-in-out infinite alternate;
+    }
+    @keyframes flotar {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-10px); }
+    }
+
+    /* =============================================
+       SECCIÓN GENÉRICA
+    ============================================= */
+    section { padding: 4rem 1.25rem; max-width: 1100px; margin: 0 auto; }
+    .section-title {
+      text-align: center; margin-bottom: 2.5rem;
+    }
+    .section-title h2 {
+      font-family: 'Pacifico', cursive;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      background: linear-gradient(90deg, var(--morado), var(--rosa));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: .5rem;
+    }
+    .section-title p { color: var(--gris); font-size: 1rem; }
+
+    /* =============================================
+       CATEGORÍAS
+    ============================================= */
+    .categorias {
+      display: flex; gap: .75rem; justify-content: center;
+      flex-wrap: wrap; margin-bottom: 2.5rem;
+    }
+    .cat-btn {
+      background: var(--blanco); border: 2px solid var(--morado-claro);
+      color: var(--morado); border-radius: 50px;
+      padding: .5rem 1.25rem; font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: .88rem; cursor: pointer;
+      transition: all .2s;
+    }
+    .cat-btn.activo,
+    .cat-btn:hover {
+      background: var(--morado); color: #fff;
+      border-color: var(--morado);
+    }
+
+    /* =============================================
+       GRID DE PRODUCTOS
+    ============================================= */
+    .productos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: var(--blanco);
+      border-radius: var(--radio);
+      overflow: hidden;
+      box-shadow: var(--sombra);
+      transition: transform .25s, box-shadow .25s;
+      display: flex; flex-direction: column;
+    }
+    .card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(165,107,255,.22); }
+    .card-emoji {
+      font-size: 4rem;
+      text-align: center;
+      padding: 1.5rem 1rem .5rem;
+      background: linear-gradient(135deg, var(--rosa-claro), var(--morado-claro));
+    }
+    .card-body { padding: 1rem 1.25rem 1.25rem; flex: 1; display: flex; flex-direction: column; }
+    .card-tag {
+      display: inline-block;
+      font-size: .7rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .06em; border-radius: 50px;
+      padding: .2rem .65rem; margin-bottom: .5rem;
+    }
+    .tag-helado  { background: var(--rosa-claro);   color: var(--rosa); }
+    .tag-paleta  { background: var(--azul-claro);   color: #2b8fd4; }
+    .tag-antojo  { background: var(--verde-claro);  color: #1a9e6b; }
+    .tag-bebida  { background: var(--morado-claro); color: var(--morado); }
+    .card h3 { font-size: 1rem; font-weight: 800; margin-bottom: .3rem; }
+    .card p  { font-size: .83rem; color: var(--gris); flex: 1; line-height: 1.5; }
+    .card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 1rem;
+    }
+    .precio {
+      font-weight: 800; font-size: 1.1rem;
+      background: linear-gradient(90deg, var(--morado), var(--rosa));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .btn-agregar {
+      background: linear-gradient(135deg, var(--verde), #2fc98c);
+      color: #fff; border: none; border-radius: 50px;
+      padding: .45rem 1rem; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: .82rem; cursor: pointer;
+      transition: transform .18s, box-shadow .18s;
+      box-shadow: 0 4px 14px rgba(76,217,160,.35);
+    }
+    .btn-agregar:hover { transform: scale(1.06); box-shadow: 0 6px 18px rgba(76,217,160,.45); }
+    .btn-agregar.agregado { background: var(--morado); box-shadow: 0 4px 14px rgba(165,107,255,.35); }
+
+    /* =============================================
+       CARRITO PANEL
+    ============================================= */
+    .carrito-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(45,27,78,.45);
+      backdrop-filter: blur(4px);
+    }
+    .carrito-overlay.abierto { display: block; }
+    .carrito-panel {
+      position: fixed; top: 0; right: -100%;
+      width: min(400px, 100vw); height: 100dvh;
+      background: var(--blanco); z-index: 1001;
+      display: flex; flex-direction: column;
+      box-shadow: -8px 0 40px rgba(45,27,78,.2);
+      transition: right .35s cubic-bezier(.4,0,.2,1);
+      border-radius: var(--radio) 0 0 var(--radio);
+    }
+    .carrito-panel.abierto { right: 0; }
+    .carrito-header {
+      padding: 1.25rem 1.5rem;
+      background: linear-gradient(135deg, var(--rosa), var(--morado));
+      color: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+      border-radius: var(--radio) 0 0 0;
+    }
+    .carrito-header h2 { font-size: 1.2rem; font-weight: 800; }
+    .btn-cerrar {
+      background: rgba(255,255,255,.25); border: none;
+      color: #fff; border-radius: 50%; width: 34px; height: 34px;
+      font-size: 1.2rem; cursor: pointer; display: grid; place-items: center;
+      transition: background .2s;
+    }
+    .btn-cerrar:hover { background: rgba(255,255,255,.4); }
+    .carrito-items { flex: 1; overflow-y: auto; padding: 1rem 1.5rem; }
+    .carrito-vacio {
+      text-align: center; color: var(--gris);
+      padding: 3rem 1rem;
+    }
+    .carrito-vacio .emoji-vacio { font-size: 3.5rem; display: block; margin-bottom: .75rem; }
+    .item-carrito {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .9rem 0;
+      border-bottom: 1px solid var(--rosa-claro);
+    }
+    .item-emoji { font-size: 2rem; width: 44px; text-align: center; }
+    .item-info { flex: 1; }
+    .item-info strong { font-size: .9rem; display: block; margin-bottom: .15rem; }
+    .item-precio { font-size: .8rem; color: var(--morado); font-weight: 700; }
+    .item-controles { display: flex; align-items: center; gap: .4rem; }
+    .btn-qty {
+      background: var(--morado-claro); border: none;
+      color: var(--morado); border-radius: 50%;
+      width: 28px; height: 28px; font-size: 1rem;
+      cursor: pointer; font-weight: 900;
+      display: grid; place-items: center;
+      transition: background .18s;
+    }
+    .btn-qty:hover { background: var(--morado); color: #fff; }
+    .item-qty { font-weight: 800; font-size: .9rem; min-width: 20px; text-align: center; }
+    .btn-eliminar {
+      background: #ffeaea; border: none; color: #e05555;
+      border-radius: 50%; width: 28px; height: 28px;
+      font-size: .85rem; cursor: pointer; display: grid; place-items: center;
+      transition: background .18s;
+    }
+    .btn-eliminar:hover { background: #e05555; color: #fff; }
+    .carrito-footer { padding: 1.25rem 1.5rem; border-top: 2px solid var(--rosa-claro); }
+    .total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1rem;
+    }
+    .total-label { font-weight: 700; color: var(--gris); }
+    .total-monto {
+      font-family: 'Pacifico', cursive; font-size: 1.4rem;
+      background: linear-gradient(90deg, var(--morado), var(--rosa));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .btn-whatsapp {
+      width: 100%;
+      background: linear-gradient(135deg, #25D366, #128C7E);
+      color: #fff; border: none; border-radius: 50px;
+      padding: .9rem; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: .5rem;
+      box-shadow: 0 6px 20px rgba(37,211,102,.35);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-whatsapp:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(37,211,102,.45); }
+    .btn-whatsapp:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .nombre-input-wrap {
+      margin-bottom: 1rem;
+    }
+    .nombre-input-wrap label {
+      display: block; font-size: .85rem; font-weight: 800;
+      margin-bottom: .4rem; color: var(--texto);
+    }
+    .nombre-input-wrap input {
+      width: 100%; padding: .65rem 1rem;
+      border: 2px solid var(--morado-claro);
+      border-radius: 50px; font-family: 'Nunito', sans-serif;
+      font-size: .9rem; color: var(--texto);
+      outline: none; transition: border-color .2s;
+    }
+    .nombre-input-wrap input:focus { border-color: var(--morado); }
+    .nombre-input-wrap input.error { border-color: var(--rosa); }
+    .nombre-error {
+      display: none; font-size: .75rem;
+      color: var(--rosa); font-weight: 700;
+      margin-top: .3rem; padding-left: .5rem;
+    }
+    .nombre-error.visible { display: block; }
+    .confirmacion-aviso {
+      text-align: center; font-size: .75rem;
+      color: var(--gris); margin-top: .75rem; line-height: 1.5;
+    }
+
+    /* =============================================
+       NOSOTROS / INFO
+    ============================================= */
+    .nosotros-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+    .info-card {
+      background: var(--blanco); border-radius: var(--radio);
+      padding: 1.75rem 1.5rem; text-align: center;
+      box-shadow: var(--sombra);
+    }
+    .info-card .ic-icon { font-size: 2.5rem; margin-bottom: .75rem; display: block; }
+    .info-card h3 { font-size: 1rem; font-weight: 800; margin-bottom: .4rem; }
+    .info-card p  { font-size: .85rem; color: var(--gris); line-height: 1.6; }
+
+    /* =============================================
+       FOOTER
+    ============================================= */
+    footer {
+      background: var(--texto);
+      color: rgba(255,255,255,.75);
+      padding: 3rem 1.25rem 2rem;
+      margin-top: 4rem;
+    }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+    }
+    .footer-col h4 {
+      font-family: 'Pacifico', cursive;
+      color: #fff; font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+    .footer-col p, .footer-col a {
+      font-size: .88rem; line-height: 1.8;
+      text-decoration: none; color: rgba(255,255,255,.65);
+      display: block; transition: color .2s;
+    }
+    .footer-col a:hover { color: var(--rosa); }
+    .redes { display: flex; gap: .75rem; margin-top: .5rem; flex-wrap: wrap; }
+    .red-btn {
+      background: rgba(255,255,255,.1);
+      color: #fff; border-radius: 12px;
+      padding: .45rem .85rem; font-size: .82rem;
+      text-decoration: none; font-weight: 700;
+      transition: background .2s;
+      display: flex; align-items: center; gap: .3rem;
+    }
+    .red-btn:hover { background: var(--rosa); color: #fff; }
+    .footer-bottom {
+      text-align: center; margin-top: 2.5rem;
+      padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,.1);
+      font-size: .8rem; color: rgba(255,255,255,.4);
+    }
+
+    /* =============================================
+       BOTÓN FLOTANTE CARRITO (móvil)
+    ============================================= */
+    .fab-carrito {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      z-index: 800;
+      background: linear-gradient(135deg, var(--rosa), var(--morado));
+      color: #fff; border: none; border-radius: 50px;
+      padding: .8rem 1.4rem; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: .95rem; cursor: pointer;
+      box-shadow: 0 8px 28px rgba(165,107,255,.45);
+      display: flex; align-items: center; gap: .5rem;
+      transition: transform .2s;
+    }
+    .fab-carrito:hover { transform: scale(1.06); }
+    .fab-badge {
+      background: var(--verde); color: var(--texto);
+      border-radius: 50%; width: 22px; height: 22px;
+      display: grid; place-items: center; font-size: .75rem; font-weight: 900;
+    }
+
+    /* =============================================
+       TOAST NOTIFICACIÓN
+    ============================================= */
+    .toast {
+      position: fixed; bottom: 5.5rem; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--texto); color: #fff;
+      border-radius: 50px; padding: .7rem 1.5rem;
+      font-size: .88rem; font-weight: 700;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      opacity: 0; transition: opacity .25s, transform .25s;
+      z-index: 2000; white-space: nowrap;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* =============================================
+       RESPONSIVE
+    ============================================= */
+    @media (max-width: 640px) {
+      nav { display: none; }
+      .hamburger { display: flex; }
+      .hero { padding: 3rem 1rem 2.5rem; }
+      .productos-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
+      .card-emoji { font-size: 3rem; padding: 1rem .75rem .5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <div class="logo-icon">🍦</div>
+      <span class="logo-name">Estelita</span>
+    </a>
+    <nav>
+      <a href="#menu">Menú</a>
+      <a href="#nosotros">Nosotros</a>
+      <a href="#contacto">Contacto</a>
+      <button class="btn-carrito-nav" onclick="abrirCarrito()">
+        🛒 Carrito
+        <span class="carrito-badge" id="badge-nav">0</span>
+      </button>
+    </nav>
+    <div class="hamburger" onclick="toggleMenu()" id="hamburger">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#menu"      onclick="toggleMenu()">🍦 Menú</a>
+    <a href="#nosotros"  onclick="toggleMenu()">💜 Nosotros</a>
+    <a href="#contacto"  onclick="toggleMenu()">📍 Contacto</a>
+    <button class="btn-carrito-nav" onclick="abrirCarrito(); toggleMenu()">
+      🛒 Ver carrito
+      <span class="carrito-badge" id="badge-mobile">0</span>
+    </button>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<div style="max-width:1100px;margin:0 auto;">
+  <section class="hero" id="inicio">
+    <div class="hero-badge">✨ Artesanal &amp; Fresquísimo</div>
+    <h1>Los mejores helados<br>de la colonia</h1>
+    <p>Elaborados con amor, ingredientes frescos y una chispa especial que nos hace únicos. ¡Tu antojo favorito a un paso de casa!</p>
+    <div class="hero-btns">
+      <a href="#menu" class="btn-primary">🍦 Ver Menú</a>
+      <button class="btn-secondary" onclick="abrirCarrito()">🛒 Mi carrito</button>
+    </div>
+    <div class="hero-emojis">🍦🧁🍡🍧🥭🍓🍋</div>
+  </section>
+</div>
+
+<!-- ===== MENÚ ===== -->
+<section id="menu">
+  <div class="section-title">
+    <h2>Nuestro Menú</h2>
+    <p>Escoge tu favorito y arma tu pedido 😍</p>
+  </div>
+
+  <div class="categorias">
+    <button class="cat-btn activo" onclick="filtrar('todos', this)">🌈 Todos</button>
+    <button class="cat-btn" onclick="filtrar('helado', this)">🍦 Helados</button>
+    <button class="cat-btn" onclick="filtrar('paleta', this)">🍡 Paletas</button>
+    <button class="cat-btn" onclick="filtrar('bebida', this)">🥤 Bebidas</button>
+    <button class="cat-btn" onclick="filtrar('antojo', this)">🍟 Antojos</button>
+  </div>
+
+  <div class="productos-grid" id="productos-grid">
+    <!-- Productos generados por JS -->
+  </div>
+</section>
+
+<!-- ===== NOSOTROS ===== -->
+<section id="nosotros">
+  <div class="section-title">
+    <h2>¿Por qué Estelita?</h2>
+    <p>Más que una nevería, somos parte de la colonia</p>
+  </div>
+  <div class="nosotros-grid">
+    <div class="info-card">
+      <span class="ic-icon">🌿</span>
+      <h3>Ingredientes Naturales</h3>
+      <p>Usamos frutas frescas de temporada y productos locales para garantizar el mejor sabor.</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">❤️</span>
+      <h3>Hecho con Amor</h3>
+      <p>Cada paleta y helado es preparado artesanalmente por nuestra familia cada día.</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">🚀</span>
+      <h3>Pedido Fácil</h3>
+      <p>Arma tu pedido aquí y mándalo directo por WhatsApp. ¡Así de sencillo!</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">💰</span>
+      <h3>Precios Justos</h3>
+      <p>Calidad premium a precios accesibles para toda la familia de la colonia.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer id="contacto">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4>🍦 Nevería Estelita</h4>
+      <p>El sabor que nos une a todos en la colonia. Visítanos y endúlzate el día.</p>
+      <div class="redes" style="margin-top:1rem;">
+        <a href="#" class="red-btn">📸 Instagram</a>
+        <a href="#" class="red-btn">📘 Facebook</a>
+        <a href="#" class="red-btn">🎵 TikTok</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>📍 Encuéntranos</h4>
+      <p>Calle Principal #42<br>Col. La Esperanza<br>Lerdo, Dgo.</p>
+    </div>
+    <div class="footer-col">
+      <h4>🕐 Horarios</h4>
+      <p>
+        Lunes – Viernes<br>
+        <strong style="color:#fff;">10:00 am – 9:00 pm</strong><br><br>
+        Sábado y Domingo<br>
+        <strong style="color:#fff;">9:00 am – 10:00 pm</strong>
+      </p>
+    </div>
+    <div class="footer-col">
+      <h4>📞 Contáctanos</h4>
+      <!-- ⚠️ REEMPLAZA con tu número real -->
+      <a href="https://wa.me/521XXXXXXXXXX">💬 WhatsApp</a>
+      <p style="margin-top:.5rem;font-size:.8rem;opacity:.6;">
+        (sustituye XXXXXXXXXX por tu número real en el código)
+      </p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    © 2025 Nevería Estelita · Hecho con 💜 en la colonia
+  </div>
+</footer>
+
+<!-- ===== CARRITO PANEL ===== -->
+<div class="carrito-overlay" id="carrito-overlay" onclick="cerrarCarrito()"></div>
+<aside class="carrito-panel" id="carrito-panel">
+  <div class="carrito-header">
+    <h2>🛒 Tu Carrito</h2>
+    <button class="btn-cerrar" onclick="cerrarCarrito()">✕</button>
+  </div>
+  <div class="carrito-items" id="carrito-items">
+    <!-- ítems renderizados por JS -->
+  </div>
+  <div class="carrito-footer">
+    <div class="nombre-input-wrap">
+      <label for="cliente-nombre">👤 Tu nombre <span style="color:var(--rosa)">*</span></label>
+      <input type="text" id="cliente-nombre" placeholder="Ej: Carlos, Laura..." maxlength="40"
+        oninput="validarNombre()" />
+      <span class="nombre-error" id="nombre-error">⚠️ Escribe tu nombre para continuar</span>
+    </div>
+    <div class="total-row">
+      <span class="total-label">Total a pagar:</span>
+      <span class="total-monto" id="total-monto">$0</span>
+    </div>
+    <button class="btn-whatsapp" id="btn-whatsapp" onclick="hacerPedidoWhatsApp()" disabled>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.117 1.522 5.849L.078 23.903a.5.5 0 0 0 .602.602l6.054-1.444A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.9a9.9 9.9 0 0 1-5.03-1.375l-.36-.214-3.733.891.907-3.618-.235-.373A9.9 9.9 0 0 1 2.1 12C2.1 6.533 6.533 2.1 12 2.1S21.9 6.533 21.9 12 17.467 21.9 12 21.9z"/>
+      </svg>
+      Hacer pedido por WhatsApp
+    </button>
+    <p class="confirmacion-aviso">✅ Tu pedido se preparará hasta recibir confirmación por WhatsApp</p>
+  </div>
+</aside>
+
+<!-- ===== FAB CARRITO (móvil) ===== -->
+<button class="fab-carrito" onclick="abrirCarrito()">
+  🛒 <span id="fab-total">$0</span>
+  <span class="fab-badge" id="fab-badge">0</span>
+</button>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast"></div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+// =============================================
+//  CATÁLOGO DE PRODUCTOS
+// =============================================
+const catalogo = [
+  { id:1,  emoji:'🍦', nombre:'Helado de Vainilla',    precio:25, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Cremoso y suave con extracto de vainilla natural.' },
+  { id:2,  emoji:'🍫', nombre:'Helado de Chocolate',   precio:25, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Intenso sabor a cacao, irresistible en cada cucharada.' },
+  { id:3,  emoji:'🍓', nombre:'Helado de Fresa',        precio:25, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Elaborado con fresas naturales de temporada.' },
+  { id:4,  emoji:'🍋', nombre:'Helado de Limón',        precio:28, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Fresco, ácido y perfecto para el calor.' },
+  { id:5,  emoji:'🥭', nombre:'Helado de Mango',        precio:28, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Con mango manila de temporada, dulce y aromático.' },
+  { id:6,  emoji:'🍡', nombre:'Paleta de Fresa',        precio:18, categoria:'paleta',  tag:'tag-paleta', tagLabel:'Paleta',  desc:'Paleta de hielo con trozos de fresa real.' },
+  { id:7,  emoji:'🍋', nombre:'Paleta de Tamarindo',    precio:18, categoria:'paleta',  tag:'tag-paleta', tagLabel:'Paleta',  desc:'Agridulce y con un toque de chile, la favorita.' },
+  { id:8,  emoji:'🥥', nombre:'Paleta de Coco',         precio:20, categoria:'paleta',  tag:'tag-paleta', tagLabel:'Paleta',  desc:'Cremosa paleta de coco con pulpa real.' },
+  { id:9,  emoji:'🍺', nombre:'Paleta de Pepino',       precio:18, categoria:'paleta',  tag:'tag-paleta', tagLabel:'Paleta',  desc:'Refrescante paleta de pepino con limón y chile.' },
+  { id:10, emoji:'🥤', nombre:'Mangonada',               precio:45, categoria:'bebida',  tag:'tag-bebida', tagLabel:'Bebida',  desc:'Mango fresco, chamoy, chile y tamarindo. ¡Clásico!' },
+  { id:11, emoji:'🫙', nombre:'Raspado de Jamaica',      precio:30, categoria:'bebida',  tag:'tag-bebida', tagLabel:'Bebida',  desc:'Raspado gigante con agua de jamaica preparada.' },
+  { id:12, emoji:'🟤', nombre:'Raspado de Tamarindo',    precio:30, categoria:'bebida',  tag:'tag-bebida', tagLabel:'Bebida',  desc:'Raspado bañado en pulpa de tamarindo con chile.' },
+  { id:13, emoji:'🍟', nombre:'Nachos con Queso',        precio:35, categoria:'antojo',  tag:'tag-antojo', tagLabel:'Antojo',  desc:'Totopos crujientes con queso amarillo y jalapeños.' },
+  { id:14, emoji:'🫘', nombre:'Elote en Vaso',           precio:28, categoria:'antojo',  tag:'tag-antojo', tagLabel:'Antojo',  desc:'Elote cocido con crema, queso, mayonesa y chile.' },
+  { id:15, emoji:'🌽', nombre:'Esquite Especial',        precio:32, categoria:'antojo',  tag:'tag-antojo', tagLabel:'Antojo',  desc:'Esquite guisado con epazote, mayonesa y limón.' },
+  { id:16, emoji:'🍧', nombre:'Gaznate',                 precio:22, categoria:'antojo',  tag:'tag-antojo', tagLabel:'Antojo',  desc:'Barquillo crujiente relleno de crema y merengue.' },
+];
+
+// =============================================
+//  CARRITO (estado)
+// =============================================
+let carrito = [];   // [ { id, nombre, precio, emoji, cantidad } ]
+
+// =============================================
+//  RENDER PRODUCTOS
+// =============================================
+function renderProductos(lista) {
+  const grid = document.getElementById('productos-grid');
+  grid.innerHTML = '';
+  lista.forEach(p => {
+    const enCarrito = carrito.find(c => c.id === p.id);
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.dataset.categoria = p.categoria;
+    div.innerHTML = `
+      <div class="card-emoji">${p.emoji}</div>
+      <div class="card-body">
+        <span class="card-tag ${p.tag}">${p.tagLabel}</span>
+        <h3>${p.nombre}</h3>
+        <p>${p.desc}</p>
+        <div class="card-footer">
+          <span class="precio">$${p.precio}</span>
+          <button class="btn-agregar ${enCarrito ? 'agregado' : ''}"
+            onclick="agregarAlCarrito(${p.id})" id="btn-prod-${p.id}">
+            ${enCarrito ? '✓ Agregado' : '+ Agregar'}
+          </button>
+        </div>
+      </div>`;
+    grid.appendChild(div);
+  });
+}
+
+renderProductos(catalogo);
+
+// =============================================
+//  FILTRO POR CATEGORÍA
+// =============================================
+function filtrar(cat, btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('activo'));
+  btn.classList.add('activo');
+  const lista = cat === 'todos' ? catalogo : catalogo.filter(p => p.categoria === cat);
+  renderProductos(lista);
+}
+
+// =============================================
+//  LÓGICA DEL CARRITO
+// =============================================
+function agregarAlCarrito(id) {
+  const prod = catalogo.find(p => p.id === id);
+  const existente = carrito.find(c => c.id === id);
+  if (existente) {
+    existente.cantidad++;
+  } else {
+    carrito.push({ ...prod, cantidad: 1 });
+  }
+  // Actualizar botón en la tarjeta
+  const btnProd = document.getElementById(`btn-prod-${id}`);
+  if (btnProd) { btnProd.textContent = '✓ Agregado'; btnProd.classList.add('agregado'); }
+  actualizarUI();
+  mostrarToast(`${prod.emoji} ${prod.nombre} agregado al carrito`);
+}
+
+function cambiarCantidad(id, delta) {
+  const item = carrito.find(c => c.id === id);
+  if (!item) return;
+  item.cantidad += delta;
+  if (item.cantidad <= 0) eliminarDelCarrito(id);
+  else actualizarUI();
+}
+
+function eliminarDelCarrito(id) {
+  carrito = carrito.filter(c => c.id !== id);
+  // Restablecer botón en tarjeta
+  const btnProd = document.getElementById(`btn-prod-${id}`);
+  if (btnProd) { btnProd.textContent = '+ Agregar'; btnProd.classList.remove('agregado'); }
+  actualizarUI();
+}
+
+function totalItems() { return carrito.reduce((s, c) => s + c.cantidad, 0); }
+function totalPrecio() { return carrito.reduce((s, c) => s + c.precio * c.cantidad, 0); }
+
+// =============================================
+//  ACTUALIZAR TODA LA UI
+// =============================================
+function actualizarUI() {
+  const total  = totalPrecio();
+  const items  = totalItems();
+  const fmtPrecio = `$${total}`;
+
+  // Badges nav
+  document.getElementById('badge-nav').textContent    = items;
+  document.getElementById('badge-mobile').textContent = items;
+  // FAB
+  document.getElementById('fab-badge').textContent    = items;
+  document.getElementById('fab-total').textContent    = fmtPrecio;
+  // Total en panel
+  document.getElementById('total-monto').textContent  = fmtPrecio;
+  // Botón WhatsApp
+  actualizarBotonWhatsApp();
+
+  renderCarrito();
+}
+
+// =============================================
+//  RENDER PANEL CARRITO
+// =============================================
+function renderCarrito() {
+  const contenedor = document.getElementById('carrito-items');
+  if (carrito.length === 0) {
+    contenedor.innerHTML = `
+      <div class="carrito-vacio">
+        <span class="emoji-vacio">🛒</span>
+        <p>Tu carrito está vacío.<br>¡Agrega algo delicioso!</p>
+      </div>`;
+    return;
+  }
+  contenedor.innerHTML = carrito.map(item => `
+    <div class="item-carrito">
+      <div class="item-emoji">${item.emoji}</div>
+      <div class="item-info">
+        <strong>${item.nombre}</strong>
+        <span class="item-precio">$${item.precio} c/u · Subtotal: $${item.precio * item.cantidad}</span>
+      </div>
+      <div class="item-controles">
+        <button class="btn-qty" onclick="cambiarCantidad(${item.id}, -1)">−</button>
+        <span class="item-qty">${item.cantidad}</span>
+        <button class="btn-qty" onclick="cambiarCantidad(${item.id}, +1)">+</button>
+        <button class="btn-eliminar" onclick="eliminarDelCarrito(${item.id})" title="Eliminar">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+// =============================================
+//  ABRIR / CERRAR PANEL
+// =============================================
+function abrirCarrito() {
+  document.getElementById('carrito-panel').classList.add('abierto');
+  document.getElementById('carrito-overlay').classList.add('abierto');
+  document.body.style.overflow = 'hidden';
+}
+function cerrarCarrito() {
+  document.getElementById('carrito-panel').classList.remove('abierto');
+  document.getElementById('carrito-overlay').classList.remove('abierto');
+  document.body.style.overflow = '';
+}
+
+// =============================================
+//  VALIDAR NOMBRE
+// =============================================
+function validarNombre() {
+  const input = document.getElementById('cliente-nombre');
+  const error = document.getElementById('nombre-error');
+  const nombre = input.value.trim();
+  if (nombre.length > 0) {
+    input.classList.remove('error');
+    error.classList.remove('visible');
+  }
+  actualizarBotonWhatsApp();
+}
+
+function actualizarBotonWhatsApp() {
+  const nombre = document.getElementById('cliente-nombre').value.trim();
+  const btn = document.getElementById('btn-whatsapp');
+  btn.disabled = carrito.length === 0 || nombre.length === 0;
+}
+
+// =============================================
+//  PEDIDO POR WHATSAPP
+//  ⚠️ CAMBIA "521XXXXXXXXXX" por tu número real
+//  Formato: código de país + número sin espacios
+//  Ejemplo México: 5216181234567
+// =============================================
+const NUMERO_WHATSAPP = '521XXXXXXXXXX'; // <--- PON TU NÚMERO AQUÍ
+
+function hacerPedidoWhatsApp() {
+  if (carrito.length === 0) return;
+  const nombre = document.getElementById('cliente-nombre').value.trim();
+  if (!nombre) {
+    const input = document.getElementById('cliente-nombre');
+    const error = document.getElementById('nombre-error');
+    input.classList.add('error');
+    error.classList.add('visible');
+    input.focus();
+    return;
+  }
+
+  const lineasProductos = carrito
+    .map(item => `  • ${item.cantidad}x ${item.nombre} — $${item.precio * item.cantidad}`)
+    .join('\n');
+
+  const mensaje =
+    `¡Hola! Soy *${nombre}* 👋\n` +
+    `Me gustaría hacer el siguiente pedido en *Nevería Estelita*:\n\n` +
+    `${lineasProductos}\n\n` +
+    `💰 *Total a pagar: $${totalPrecio()}*\n\n` +
+    `¿Pueden confirmarlo? ¡Gracias! 🍦`;
+
+  const urlWhatsApp = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+  window.open(urlWhatsApp, '_blank');
+}
+
+// =============================================
+//  MENÚ HAMBURGUESA (MÓVIL)
+// =============================================
+function toggleMenu() {
+  const menu = document.getElementById('mobile-menu');
+  menu.classList.toggle('open');
+}
+
+// =============================================
+//  TOAST
+// =============================================
+let toastTimeout;
+function mostrarToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
