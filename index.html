@@ -194,8 +194,154 @@
     .section-title p { color: var(--gris); font-size: 1rem; }
 
     /* =============================================
+       MODAL DE PERSONALIZACIÓN
+    ============================================= */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(45,27,78,.55);
+      backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.abierto { display: flex; }
+    .modal-box {
+      background: var(--blanco);
+      border-radius: 24px;
+      width: min(480px, 100%);
+      max-height: 90dvh;
+      overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(45,27,78,.3);
+      display: flex; flex-direction: column;
+      animation: modalEntrada .25s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes modalEntrada {
+      from { transform: scale(.88) translateY(20px); opacity: 0; }
+      to   { transform: scale(1) translateY(0);      opacity: 1; }
+    }
+    .modal-header {
+      padding: 1.4rem 1.5rem 1rem;
+      border-bottom: 2px solid var(--morado-claro);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    }
+    .modal-header-info { display: flex; flex-direction: column; gap: .2rem; }
+    .modal-emoji-nombre {
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .modal-emoji-nombre .m-emoji { font-size: 2rem; }
+    .modal-emoji-nombre h3 {
+      font-size: 1.1rem; font-weight: 800; color: var(--texto);
+    }
+    .modal-precio {
+      font-weight: 800; font-size: 1rem;
+      background: linear-gradient(90deg, var(--morado), var(--rosa));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .modal-cerrar {
+      background: var(--morado-claro); border: none; border-radius: 50%;
+      width: 32px; height: 32px; cursor: pointer; font-size: 1rem;
+      display: grid; place-items: center; color: var(--morado);
+      flex-shrink: 0; transition: background .2s;
+    }
+    .modal-cerrar:hover { background: var(--morado); color: #fff; }
+    .modal-body { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+    .opcion-grupo { display: flex; flex-direction: column; gap: .55rem; }
+    .opcion-grupo label.grupo-titulo {
+      font-weight: 800; font-size: .88rem; color: var(--texto);
+      display: flex; align-items: center; gap: .35rem;
+    }
+    .opciones-chips { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .chip-opcion {
+      padding: .38rem .9rem;
+      border: 2px solid var(--morado-claro);
+      border-radius: 50px; background: var(--blanco);
+      color: var(--morado); font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: .82rem; cursor: pointer;
+      transition: all .18s;
+    }
+    .chip-opcion:hover { border-color: var(--morado); background: var(--morado-claro); }
+    .chip-opcion.seleccionado {
+      background: var(--morado); color: #fff; border-color: var(--morado);
+    }
+    .notas-campo {
+      width: 100%; border: 2px solid var(--morado-claro);
+      border-radius: 14px; padding: .75rem 1rem;
+      font-family: 'Nunito', sans-serif; font-size: .88rem;
+      color: var(--texto); resize: none; outline: none;
+      transition: border-color .2s;
+    }
+    .notas-campo:focus { border-color: var(--morado); }
+    .notas-campo::placeholder { color: var(--gris); }
+    .modal-footer {
+      padding: 1rem 1.5rem 1.5rem;
+      display: flex; gap: .75rem;
+    }
+    .btn-modal-cancelar {
+      flex: 1; padding: .7rem; border-radius: 50px;
+      border: 2.5px solid var(--morado-claro);
+      background: transparent; color: var(--morado);
+      font-family: 'Nunito', sans-serif; font-weight: 800;
+      font-size: .9rem; cursor: pointer; transition: all .2s;
+    }
+    .btn-modal-cancelar:hover { background: var(--morado-claro); }
+    .btn-modal-confirmar {
+      flex: 2; padding: .7rem; border-radius: 50px;
+      border: none;
+      background: linear-gradient(135deg, var(--verde), #2fc98c);
+      color: #fff; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: .9rem; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(76,217,160,.4);
+      transition: transform .18s, box-shadow .18s;
+    }
+    .btn-modal-confirmar:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(76,217,160,.5); }
+
+    /* Personalizacion en el carrito */
+    .item-personal {
+      font-size: .75rem; color: var(--morado);
+      margin-top: .2rem; font-style: italic; line-height: 1.4;
+    }
+
+    /* =============================================
        CATEGORÍAS
     ============================================= */
+    .buscador-wrapper {
+      display: flex; align-items: center;
+      background: var(--blanco);
+      border: 2.5px solid var(--morado-claro);
+      border-radius: 50px;
+      padding: .5rem 1.2rem;
+      gap: .6rem;
+      max-width: 480px; margin: 0 auto 1.75rem;
+      transition: border-color .2s, box-shadow .2s;
+      box-shadow: 0 4px 16px rgba(165,107,255,.08);
+    }
+    .buscador-wrapper:focus-within {
+      border-color: var(--morado);
+      box-shadow: 0 4px 20px rgba(165,107,255,.2);
+    }
+    .buscador-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .buscador-input {
+      border: none; outline: none; flex: 1;
+      font-family: 'Nunito', sans-serif;
+      font-size: .95rem; font-weight: 700;
+      color: var(--texto); background: transparent;
+    }
+    .buscador-input::placeholder { color: var(--gris); font-weight: 600; }
+    .buscador-clear {
+      background: var(--morado-claro); border: none;
+      color: var(--morado); border-radius: 50%;
+      width: 22px; height: 22px; font-size: .8rem;
+      cursor: pointer; display: none; place-items: center;
+      font-weight: 900; transition: background .18s;
+    }
+    .buscador-clear.visible { display: grid; }
+    .buscador-clear:hover { background: var(--morado); color: #fff; }
+    .no-resultados {
+      text-align: center; color: var(--gris);
+      padding: 3rem 1rem; grid-column: 1/-1;
+    }
+    .no-resultados .emoji-vacio { font-size: 3rem; display: block; margin-bottom: .75rem; }
+
     .categorias {
       display: flex; gap: .75rem; justify-content: center;
       flex-wrap: wrap; margin-bottom: 2.5rem;
@@ -243,10 +389,22 @@
       letter-spacing: .06em; border-radius: 50px;
       padding: .2rem .65rem; margin-bottom: .5rem;
     }
-    .tag-helado  { background: var(--rosa-claro);   color: var(--rosa); }
-    .tag-paleta  { background: var(--azul-claro);   color: #2b8fd4; }
-    .tag-antojo  { background: var(--verde-claro);  color: #1a9e6b; }
-    .tag-bebida  { background: var(--morado-claro); color: var(--morado); }
+    .tag-helado      { background: var(--rosa-claro);   color: var(--rosa); }
+    .tag-paleta      { background: var(--azul-claro);   color: #2b8fd4; }
+    .tag-antojo      { background: var(--verde-claro);  color: #1a9e6b; }
+    .tag-bebida      { background: var(--morado-claro); color: var(--morado); }
+    .tag-fresas      { background: #ffe0e8; color: #d63a6a; }
+    .tag-raspa       { background: var(--azul-claro);   color: #1a7fc1; }
+    .tag-crema       { background: var(--rosa-claro);   color: var(--rosa); }
+    .tag-especialidad{ background: #fff3cc; color: #b07d00; }
+    .tag-chocolate   { background: #f0e0d0; color: #7a3d10; }
+    .tag-frappe      { background: var(--morado-claro); color: var(--morado); }
+    .tag-elote       { background: #fffacc; color: #8a7000; }
+    .tag-chorreado   { background: #e8f5e9; color: #2e7d32; }
+    .tag-duro        { background: #fce4ec; color: #c2185b; }
+    .tag-tostito     { background: #e8f5e9; color: #1a7a45; }
+    .tag-nacho       { background: #fff3e0; color: #e65100; }
+    .tag-extra       { background: #e8f4ff; color: #0066cc; }
     .card h3 { font-size: 1rem; font-weight: 800; margin-bottom: .3rem; }
     .card p  { font-size: .83rem; color: var(--gris); flex: 1; line-height: 1.5; }
     .card-footer {
@@ -362,31 +520,34 @@
     }
     .btn-whatsapp:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(37,211,102,.45); }
     .btn-whatsapp:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-    .nombre-input-wrap {
+    .nombre-wrapper {
+      background: linear-gradient(135deg, var(--rosa-claro), var(--morado-claro));
+      border-radius: 18px;
+      padding: 3px;
       margin-bottom: 1rem;
     }
-    .nombre-input-wrap label {
-      display: block; font-size: .85rem; font-weight: 800;
-      margin-bottom: .4rem; color: var(--texto);
+    .nombre-inner {
+      background: var(--blanco);
+      border-radius: 16px;
+      padding: .6rem 1rem;
+      display: flex; align-items: center; gap: .6rem;
     }
-    .nombre-input-wrap input {
-      width: 100%; padding: .65rem 1rem;
-      border: 2px solid var(--morado-claro);
-      border-radius: 50px; font-family: 'Nunito', sans-serif;
-      font-size: .9rem; color: var(--texto);
-      outline: none; transition: border-color .2s;
+    .nombre-icon {
+      font-size: 1.4rem; flex-shrink: 0;
     }
-    .nombre-input-wrap input:focus { border-color: var(--morado); }
-    .nombre-input-wrap input.error { border-color: var(--rosa); }
-    .nombre-error {
-      display: none; font-size: .75rem;
-      color: var(--rosa); font-weight: 700;
-      margin-top: .3rem; padding-left: .5rem;
+    .nombre-campo {
+      border: none; outline: none; flex: 1;
+      font-family: 'Nunito', sans-serif; font-size: .95rem;
+      font-weight: 700; color: var(--texto);
+      background: transparent;
     }
-    .nombre-error.visible { display: block; }
-    .confirmacion-aviso {
-      text-align: center; font-size: .75rem;
-      color: var(--gris); margin-top: .75rem; line-height: 1.5;
+    .nombre-campo::placeholder { color: var(--gris); font-weight: 600; }
+    .nombre-wrapper.error { animation: shake .3s; }
+    .nombre-wrapper.error .nombre-inner { background: #fff0f0; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-6px); }
+      75%      { transform: translateX(6px); }
     }
 
     /* =============================================
@@ -534,14 +695,14 @@
 <!-- ===== HERO ===== -->
 <div style="max-width:1100px;margin:0 auto;">
   <section class="hero" id="inicio">
-    <div class="hero-badge">✨ Artesanal &amp; Fresquísimo</div>
-    <h1>Los mejores helados<br>de la colonia</h1>
-    <p>Elaborados con amor, ingredientes frescos y una chispa especial que nos hace únicos. ¡Tu antojo favorito a un paso de casa!</p>
+    <div class="hero-badge">⭐ Tradición desde 1975</div>
+    <h1>Nevería y Snacks<br>Estelita</h1>
+    <p>Nieves, raspas, fresas, elotes, duros y mucho más. Ingredientes y productos de primera calidad. ¡Pide directo por WhatsApp!</p>
     <div class="hero-btns">
       <a href="#menu" class="btn-primary">🍦 Ver Menú</a>
       <button class="btn-secondary" onclick="abrirCarrito()">🛒 Mi carrito</button>
     </div>
-    <div class="hero-emojis">🍦🧁🍡🍧🥭🍓🍋</div>
+    <div class="hero-emojis">🍦🍓🌽🧊🍫🥤🌶️</div>
   </section>
 </div>
 
@@ -552,12 +713,27 @@
     <p>Escoge tu favorito y arma tu pedido 😍</p>
   </div>
 
+  <div class="buscador-wrapper">
+    <span class="buscador-icon">🔍</span>
+    <input type="text" id="buscador" class="buscador-input"
+      placeholder="Busca tu antojo..." maxlength="50"
+      oninput="buscar(this.value)" />
+    <button class="buscador-clear" id="buscador-clear" onclick="limpiarBusqueda()">✕</button>
+  </div>
   <div class="categorias">
     <button class="cat-btn activo" onclick="filtrar('todos', this)">🌈 Todos</button>
-    <button class="cat-btn" onclick="filtrar('helado', this)">🍦 Helados</button>
-    <button class="cat-btn" onclick="filtrar('paleta', this)">🍡 Paletas</button>
-    <button class="cat-btn" onclick="filtrar('bebida', this)">🥤 Bebidas</button>
-    <button class="cat-btn" onclick="filtrar('antojo', this)">🍟 Antojos</button>
+    <button class="cat-btn" onclick="filtrar('fresas', this)">🍓 Fresas</button>
+    <button class="cat-btn" onclick="filtrar('raspa', this)">🧊 Raspas</button>
+    <button class="cat-btn" onclick="filtrar('crema', this)">🍦 Nieve de Crema</button>
+    <button class="cat-btn" onclick="filtrar('especialidad', this)">⭐ Especialidades</button>
+    <button class="cat-btn" onclick="filtrar('chocolate', this)">🍫 Chocolatísimos</button>
+    <button class="cat-btn" onclick="filtrar('frappe', this)">🥤 Frappes</button>
+    <button class="cat-btn" onclick="filtrar('elote', this)">🌽 Elotes</button>
+    <button class="cat-btn" onclick="filtrar('chorreado', this)">🫙 Chorreadoss</button>
+    <button class="cat-btn" onclick="filtrar('duro', this)">🍿 Duros</button>
+    <button class="cat-btn" onclick="filtrar('tostito', this)">🥗 Tostitos</button>
+    <button class="cat-btn" onclick="filtrar('nacho', this)">🧀 Nachos y más</button>
+    <button class="cat-btn" onclick="filtrar('extra', this)">➕ Extras</button>
   </div>
 
   <div class="productos-grid" id="productos-grid">
@@ -573,24 +749,24 @@
   </div>
   <div class="nosotros-grid">
     <div class="info-card">
-      <span class="ic-icon">🌿</span>
-      <h3>Ingredientes Naturales</h3>
-      <p>Usamos frutas frescas de temporada y productos locales para garantizar el mejor sabor.</p>
+      <span class="ic-icon">🏆</span>
+      <h3>Desde 1975</h3>
+      <p>Más de 50 años endulzando Lerdo. Una tradición familiar que no falla.</p>
     </div>
     <div class="info-card">
-      <span class="ic-icon">❤️</span>
-      <h3>Hecho con Amor</h3>
-      <p>Cada paleta y helado es preparado artesanalmente por nuestra familia cada día.</p>
+      <span class="ic-icon">✅</span>
+      <h3>Primera Calidad</h3>
+      <p>Ingredientes y productos de primera calidad en todo lo que preparamos.</p>
     </div>
     <div class="info-card">
-      <span class="ic-icon">🚀</span>
-      <h3>Pedido Fácil</h3>
-      <p>Arma tu pedido aquí y mándalo directo por WhatsApp. ¡Así de sencillo!</p>
+      <span class="ic-icon">🌈</span>
+      <h3>Para Todo el Antojo</h3>
+      <p>Nieves, raspas, fresas, elotes, duros, frappes y mucho más. ¡Hay para todos!</p>
     </div>
     <div class="info-card">
-      <span class="ic-icon">💰</span>
-      <h3>Precios Justos</h3>
-      <p>Calidad premium a precios accesibles para toda la familia de la colonia.</p>
+      <span class="ic-icon">💬</span>
+      <h3>Pide por WhatsApp</h3>
+      <p>Arma tu pedido aquí y mándalo directo al WhatsApp. ¡Rapidísimo y fácil!</p>
     </div>
   </div>
 </section>
@@ -600,37 +776,31 @@
   <div class="footer-inner">
     <div class="footer-col">
       <h4>🍦 Nevería Estelita</h4>
-      <p>El sabor que nos une a todos en la colonia. Visítanos y endúlzate el día.</p>
+      <p>Tradición desde 1975. Ingredientes y productos de primera calidad. ¡Visítanos y endúlzate el día!</p>
       <div class="redes" style="margin-top:1rem;">
-        <a href="#" class="red-btn">📸 Instagram</a>
-        <a href="#" class="red-btn">📘 Facebook</a>
-        <a href="#" class="red-btn">🎵 TikTok</a>
+        <a href="https://www.facebook.com/Neveria-Estelita" target="_blank" class="red-btn">📘 Facebook</a>
+        <a href="https://wa.me/528714024914" target="_blank" class="red-btn">💬 WhatsApp</a>
       </div>
     </div>
     <div class="footer-col">
       <h4>📍 Encuéntranos</h4>
-      <p>Calle Principal #42<br>Col. La Esperanza<br>Lerdo, Dgo.</p>
+      <p>Av. Manuel Castañeda #9<br>Col. 5 de Mayo, Zona Centro<br>Cd. Lerdo, Dgo.</p>
     </div>
     <div class="footer-col">
       <h4>🕐 Horarios</h4>
       <p>
-        Lunes – Viernes<br>
-        <strong style="color:#fff;">10:00 am – 9:00 pm</strong><br><br>
-        Sábado y Domingo<br>
-        <strong style="color:#fff;">9:00 am – 10:00 pm</strong>
+        Lunes – Domingo<br>
+        <strong style="color:#fff;">10:30 am – 10:30 pm</strong>
       </p>
     </div>
     <div class="footer-col">
       <h4>📞 Contáctanos</h4>
-      <!-- ⚠️ REEMPLAZA con tu número real -->
-      <a href="https://wa.me/521XXXXXXXXXX">💬 WhatsApp</a>
-      <p style="margin-top:.5rem;font-size:.8rem;opacity:.6;">
-        (sustituye XXXXXXXXXX por tu número real en el código)
-      </p>
+      <a href="https://wa.me/528714024914" target="_blank">💬 87 15 71 31 26</a>
+      <p style="margin-top:.5rem;font-size:.85rem;opacity:.75;">Haz tu pedido directo por WhatsApp, ¡rápido y fácil!</p>
     </div>
   </div>
   <div class="footer-bottom">
-    © 2025 Nevería Estelita · Hecho con 💜 en la colonia
+    © 2025 Nevería y Snacks Estelita · Tradición desde 1975 · Cd. Lerdo, Dgo. 💜
   </div>
 </footer>
 
@@ -645,24 +815,26 @@
     <!-- ítems renderizados por JS -->
   </div>
   <div class="carrito-footer">
-    <div class="nombre-input-wrap">
-      <label for="cliente-nombre">👤 Tu nombre <span style="color:var(--rosa)">*</span></label>
-      <input type="text" id="cliente-nombre" placeholder="Ej: Carlos, Laura..." maxlength="40"
-        oninput="validarNombre()" />
-      <span class="nombre-error" id="nombre-error">⚠️ Escribe tu nombre para continuar</span>
+    <p style="font-size:.78rem; font-weight:800; color:var(--morado); margin-bottom:.4rem; letter-spacing:.03em;">👤 TU NOMBRE</p>
+    <div class="nombre-wrapper" id="nombre-wrapper">
+      <div class="nombre-inner">
+        <span class="nombre-icon">🍦</span>
+        <input type="text" id="cliente-nombre" class="nombre-campo"
+          placeholder="¿Para quién es el pedido?" maxlength="40" />
+      </div>
     </div>
     <div class="total-row">
       <span class="total-label">Total a pagar:</span>
       <span class="total-monto" id="total-monto">$0</span>
     </div>
     <button class="btn-whatsapp" id="btn-whatsapp" onclick="hacerPedidoWhatsApp()" disabled>
+      <!-- ícono WhatsApp SVG inline -->
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
         <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.117 1.522 5.849L.078 23.903a.5.5 0 0 0 .602.602l6.054-1.444A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.9a9.9 9.9 0 0 1-5.03-1.375l-.36-.214-3.733.891.907-3.618-.235-.373A9.9 9.9 0 0 1 2.1 12C2.1 6.533 6.533 2.1 12 2.1S21.9 6.533 21.9 12 17.467 21.9 12 21.9z"/>
       </svg>
       Hacer pedido por WhatsApp
     </button>
-    <p class="confirmacion-aviso">✅ Tu pedido se preparará hasta recibir confirmación por WhatsApp</p>
   </div>
 </aside>
 
@@ -675,34 +847,344 @@
 <!-- ===== TOAST ===== -->
 <div class="toast" id="toast"></div>
 
+<!-- ===== MODAL PERSONALIZACIÓN ===== -->
+<div class="modal-overlay" id="modal-personal" onclick="cerrarModalSiOverlay(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-emoji-nombre">
+          <span class="m-emoji" id="modal-emoji"></span>
+          <h3 id="modal-nombre"></h3>
+        </div>
+        <span class="modal-precio" id="modal-precio"></span>
+      </div>
+      <button class="modal-cerrar" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-opciones">
+      <!-- opciones generadas por JS -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancelar" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-modal-confirmar" onclick="confirmarPersonalizacion()">🛒 Agregar al carrito</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== JAVASCRIPT ===== -->
 <script>
 // =============================================
 //  CATÁLOGO DE PRODUCTOS
 // =============================================
 const catalogo = [
-  { id:1,  emoji:'🍦', nombre:'Helado de Vainilla',    precio:25, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Cremoso y suave con extracto de vainilla natural.' },
-  { id:2,  emoji:'🍫', nombre:'Helado de Chocolate',   precio:25, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Intenso sabor a cacao, irresistible en cada cucharada.' },
-  { id:3,  emoji:'🍓', nombre:'Helado de Fresa',        precio:25, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Elaborado con fresas naturales de temporada.' },
-  { id:4,  emoji:'🍋', nombre:'Helado de Limón',        precio:28, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Fresco, ácido y perfecto para el calor.' },
-  { id:5,  emoji:'🥭', nombre:'Helado de Mango',        precio:28, categoria:'helado',  tag:'tag-helado', tagLabel:'Helado',  desc:'Con mango manila de temporada, dulce y aromático.' },
-  { id:6,  emoji:'🍡', nombre:'Paleta de Fresa',        precio:18, categoria:'paleta',  tag:'tag-paleta', tagLabel:'Paleta',  desc:'Paleta de hielo con trozos de fresa real.' },
-  { id:7,  emoji:'🍋', nombre:'Paleta de Tamarindo',    precio:18, categoria:'paleta',  tag:'tag-paleta', tagLabel:'Paleta',  desc:'Agridulce y con un toque de chile, la favorita.' },
-  { id:8,  emoji:'🥥', nombre:'Paleta de Coco',         precio:20, categoria:'paleta',  tag:'tag-paleta', tagLabel:'Paleta',  desc:'Cremosa paleta de coco con pulpa real.' },
-  { id:9,  emoji:'🍺', nombre:'Paleta de Pepino',       precio:18, categoria:'paleta',  tag:'tag-paleta', tagLabel:'Paleta',  desc:'Refrescante paleta de pepino con limón y chile.' },
-  { id:10, emoji:'🥤', nombre:'Mangonada',               precio:45, categoria:'bebida',  tag:'tag-bebida', tagLabel:'Bebida',  desc:'Mango fresco, chamoy, chile y tamarindo. ¡Clásico!' },
-  { id:11, emoji:'🫙', nombre:'Raspado de Jamaica',      precio:30, categoria:'bebida',  tag:'tag-bebida', tagLabel:'Bebida',  desc:'Raspado gigante con agua de jamaica preparada.' },
-  { id:12, emoji:'🟤', nombre:'Raspado de Tamarindo',    precio:30, categoria:'bebida',  tag:'tag-bebida', tagLabel:'Bebida',  desc:'Raspado bañado en pulpa de tamarindo con chile.' },
-  { id:13, emoji:'🍟', nombre:'Nachos con Queso',        precio:35, categoria:'antojo',  tag:'tag-antojo', tagLabel:'Antojo',  desc:'Totopos crujientes con queso amarillo y jalapeños.' },
-  { id:14, emoji:'🫘', nombre:'Elote en Vaso',           precio:28, categoria:'antojo',  tag:'tag-antojo', tagLabel:'Antojo',  desc:'Elote cocido con crema, queso, mayonesa y chile.' },
-  { id:15, emoji:'🌽', nombre:'Esquite Especial',        precio:32, categoria:'antojo',  tag:'tag-antojo', tagLabel:'Antojo',  desc:'Esquite guisado con epazote, mayonesa y limón.' },
-  { id:16, emoji:'🍧', nombre:'Gaznate',                 precio:22, categoria:'antojo',  tag:'tag-antojo', tagLabel:'Antojo',  desc:'Barquillo crujiente relleno de crema y merengue.' },
+  // ── FRESAS CON CREMA ──
+  { id:1,  emoji:'🍓', nombre:'Fresas con Crema Sencillas', precio:70,  categoria:'fresas',      tag:'tag-fresas',      tagLabel:'Fresas',         desc:'Fresas frescas bañadas en crema. ¡El clásico de siempre!' },
+  { id:2,  emoji:'🍓', nombre:'Fresas con Nieve',           precio:95,  categoria:'fresas',      tag:'tag-fresas',      tagLabel:'Fresas',         desc:'Fresas con crema y una bola de nieve encima.' },
+  { id:3,  emoji:'🍰', nombre:'Fresas con Cheesecake',      precio:100, categoria:'fresas',      tag:'tag-fresas',      tagLabel:'Fresas',         desc:'Fresas con crema y trozos de cheesecake. ¡Una delicia!' },
+  { id:4,  emoji:'🍫', nombre:'Fresas con Chocolate',       precio:100, categoria:'fresas',      tag:'tag-fresas',      tagLabel:'Fresas',         desc:'Fresas con crema bañadas en chocolate fundido.' },
+  { id:5,  emoji:'✨', nombre:'Fresas Dubai',               precio:115, categoria:'fresas_dubai',      tag:'tag-fresas',      tagLabel:'Fresas',         desc:'La versión premium de nuestras fresas. ¡Tienen que probarlas!' },
+  // ── NIEVE DE RASPA ──
+  { id:6,  emoji:'🧊', nombre:'Raspa de Agua',              precio:30,  categoria:'raspa',       tag:'tag-raspa',       tagLabel:'Raspa',          desc:'Raspado de hielo con sabor de agua fresca. Fresquísimo.' },
+  { id:7,  emoji:'🫙', nombre:'Raspa de Mermelada',         precio:65,  categoria:'raspa',       tag:'tag-raspa',       tagLabel:'Raspa',          desc:'Raspado bañado en mermelada. Dulce y muy rico.' },
+  // ── NIEVE DE CREMA ──
+  { id:8,  emoji:'🍦', nombre:'Nieve de Crema – Vaso Chico',   precio:35,  categoria:'crema',   tag:'tag-crema',       tagLabel:'Nieve de Crema', desc:'Nieve artesanal cremosa en vaso chico.' },
+  { id:9,  emoji:'🍦', nombre:'Nieve de Crema – Vaso Mediano', precio:50,  categoria:'crema',   tag:'tag-crema',       tagLabel:'Nieve de Crema', desc:'Nieve artesanal cremosa en vaso mediano.' },
+  { id:10, emoji:'🍦', nombre:'Nieve de Crema – Vaso Grande',  precio:100, categoria:'crema',   tag:'tag-crema',       tagLabel:'Nieve de Crema', desc:'Nieve artesanal cremosa en vaso grande. ¡La más generosa!' },
+  { id:11, emoji:'🍦', nombre:'Nieve de Crema – Barquillo',    precio:35,  categoria:'crema',   tag:'tag-crema',       tagLabel:'Nieve de Crema', desc:'Nieve artesanal en barquillo crujiente.' },
+  { id:12, emoji:'🧺', nombre:'Nieve de Crema – Canasta',      precio:55,  categoria:'crema',   tag:'tag-crema',       tagLabel:'Nieve de Crema', desc:'Nieve servida en canasta, presentación especial.' },
+  { id:13, emoji:'🪣', nombre:'Litro de Nieve',                precio:140, categoria:'crema',   tag:'tag-crema',       tagLabel:'Nieve de Crema', desc:'Un litro completo de nuestra nieve artesanal. ¡Para llevar!' },
+  // ── ESPECIALIDADES ──
+  { id:14, emoji:'🌴', nombre:'Tropicana',      precio:90, categoria:'especialidad', tag:'tag-especialidad', tagLabel:'Especialidad', desc:'Nieve de raspa, fruta picada y lechera. ¡Sabor tropical!' },
+  { id:15, emoji:'🐵', nombre:'Changuito',      precio:90, categoria:'especialidad', tag:'tag-especialidad', tagLabel:'Especialidad', desc:'Nieve de raspa, 3 chamoy, chile, limón y paleta de tamarindo.' },
+  { id:16, emoji:'⭐', nombre:'Gloria',         precio:90, categoria:'especialidad', tag:'tag-especialidad', tagLabel:'Especialidad', desc:'Nieve de raspa, plátano, lechera, canela y galleta.' },
+  { id:17, emoji:'🏰', nombre:'Obispo',         precio:85, categoria:'obispo',       tag:'tag-especialidad', tagLabel:'Especialidad', desc:'Nieve de raspa, nieve de crema o nieve de garrafa, chocolate o chamoy.' },
+  { id:18, emoji:'🌶️', nombre:'Picafresa',      precio:90, categoria:'especialidad', tag:'tag-especialidad', tagLabel:'Especialidad', desc:'Nieve de raspa, chamoy, picafresas y miguelito en polvo.' },
+  { id:19, emoji:'🍌', nombre:'Banana Split',   precio:90, categoria:'especialidad', tag:'tag-especialidad', tagLabel:'Especialidad', desc:'3 bolas de nieve, mermelada, plátano, crema batida, chocolate, chispas y cereza.' },
+  // ── CHOCOLATÍSIMOS ──
+  { id:20, emoji:'🍫', nombre:'Chocolatísimo Magnum',     precio:100, categoria:'chocolate', tag:'tag-chocolate', tagLabel:'Chocolatísimo', desc:'Especial Magnum – Explosión de sabor a chocolate. ¡El más pedido!' },
+  { id:21, emoji:'🍫', nombre:'Chocolatísimo Ferrero',    precio:100, categoria:'chocolate', tag:'tag-chocolate', tagLabel:'Chocolatísimo', desc:'Inspirado en el Ferrero Rocher. Avellana, chocolate y crema.' },
+  { id:22, emoji:'🍫', nombre:'Chocolatísimo Kinder',     precio:95,  categoria:'chocolate', tag:'tag-chocolate', tagLabel:'Chocolatísimo', desc:'Sabor a Kinder Bueno con crema y leche. Dulce y suave.' },
+  { id:23, emoji:'🍫', nombre:'Chocolatísimo Gansito',    precio:95,  categoria:'chocolate', tag:'tag-chocolate', tagLabel:'Chocolatísimo', desc:'El clásico Gansito convertido en delicia helada.' },
+  { id:24,  emoji:'🍫', nombre:'Chocolatísimo Snickers',      precio:95, categoria:'chocolate', tag:'tag-chocolate', tagLabel:'Chocolatísimo', desc:'Combinación irresistible de caramelo, chocolate y crema.' },
+  { id:241, emoji:'🍫', nombre:'Chocolatísimo Milky Way',      precio:95, categoria:'chocolate', tag:'tag-chocolate', tagLabel:'Chocolatísimo', desc:'Suave y esponjoso con caramelo y chocolate.' },
+  { id:242, emoji:'🍭', nombre:'Chocolatísimo Paleta Payaso',  precio:95, categoria:'chocolate', tag:'tag-chocolate', tagLabel:'Chocolatísimo', desc:'Sabor a Paleta Payaso. ¡Colorido, dulce y muy divertido!' },
+  // ── FRAPPES ──
+  { id:25, emoji:'🥤', nombre:'Frappe Moka',    precio:75, categoria:'frappe', tag:'tag-frappe', tagLabel:'Frappe', desc:'Frappe sabor Moka. Intenso y delicioso.' },
+  { id:251, emoji:'🥤', nombre:'Frappe Fresa',   precio:75, categoria:'frappe', tag:'tag-frappe', tagLabel:'Frappe', desc:'Frappe sabor Fresa. Fresquito y dulce.' },
+  { id:252, emoji:'🥤', nombre:'Frappe Mazapán', precio:75, categoria:'frappe', tag:'tag-frappe', tagLabel:'Frappe', desc:'Frappe sabor Mazapán. Único y muy rico.' },
+  { id:253, emoji:'🥤', nombre:'Frappe Mango',   precio:75, categoria:'frappe', tag:'tag-frappe', tagLabel:'Frappe', desc:'Frappe sabor Mango. Tropical y refrescante.' },
+  { id:26, emoji:'🥤', nombre:'Frappe Chocoreta',  precio:95, categoria:'frappe', tag:'tag-frappe', tagLabel:'Frappe', desc:'Frappe especial sabor chocoreta. Único y delicioso.' },
+  { id:27, emoji:'🥤', nombre:'Frappe Kinder',     precio:95, categoria:'frappe', tag:'tag-frappe', tagLabel:'Frappe', desc:'Frappe con sabor Kinder, cremoso y muy dulce.' },
+  { id:28, emoji:'🥤', nombre:'Frappe Nutella',    precio:95, categoria:'frappe', tag:'tag-frappe', tagLabel:'Frappe', desc:'Frappe de avellana con Nutella. ¡Un vicio!' },
+  { id:29, emoji:'🥤', nombre:'Frappe Ferrero',    precio:95, categoria:'frappe', tag:'tag-frappe', tagLabel:'Frappe', desc:'Frappe inspirado en Ferrero Rocher con avellana y chocolate.' },
+  { id:30, emoji:'🥤', nombre:'Frappe Magnum',     precio:95, categoria:'frappe', tag:'tag-frappe', tagLabel:'Frappe', desc:'Frappe estilo Magnum, intenso sabor a chocolate y vainilla.' },
+  // ── ELOTES ──
+  { id:31, emoji:'🌽', nombre:'Elote Chico',        precio:40,  categoria:'elote', tag:'tag-elote', tagLabel:'Elote', desc:'Elote tierno en vaso chico con lo que tú quieras.' },
+  { id:32, emoji:'🌽', nombre:'Elote Mediano',      precio:70,  categoria:'elote', tag:'tag-elote', tagLabel:'Elote', desc:'Elote tierno en vaso mediano. Perfecto para el antojo.' },
+  { id:33, emoji:'🌽', nombre:'Elote Grande',       precio:80,  categoria:'elote', tag:'tag-elote', tagLabel:'Elote', desc:'Elote tierno en vaso grande. ¡Bien cargadito!' },
+  { id:34, emoji:'🌽', nombre:'Elote Entero',       precio:90,  categoria:'elote', tag:'tag-elote', tagLabel:'Elote', desc:'Elote entero preparado a tu gusto.' },
+  { id:35, emoji:'🌽', nombre:'Elote Empanizado',   precio:100, categoria:'elote_emp', tag:'tag-elote', tagLabel:'Elote', desc:'Elote empanizado y preparado. ¡Crunchy y delicioso!' },
+  // ── CHORREADOSS ──
+  { id:36, emoji:'🫙', nombre:'Chorreado Chico',    precio:90,  categoria:'chorreado', tag:'tag-chorreado', tagLabel:'Chorreado', desc:'Duro preparado chico bien chorreado de lo que quieras.' },
+  { id:37, emoji:'🫙', nombre:'Chorreado Mediano',  precio:105, categoria:'chorreado', tag:'tag-chorreado', tagLabel:'Chorreado', desc:'Duro preparado mediano, cargadito de sabor.' },
+  { id:38, emoji:'🫙', nombre:'Chorreado Grande',   precio:130, categoria:'chorreado', tag:'tag-chorreado', tagLabel:'Chorreado', desc:'Duro preparado grande. ¡Para el antojo serio!' },
+  { id:39, emoji:'🫙', nombre:'Chorreado Entero',   precio:140, categoria:'chorreado', tag:'tag-chorreado', tagLabel:'Chorreado', desc:'Duro entero preparado a tope. El más abundante.' },
+  // ── DUROS PREPARADOS ──
+  { id:40, emoji:'🍿', nombre:'Duro Entero Preparado',     precio:68,  categoria:'duro', tag:'tag-duro', tagLabel:'Duros', desc:'Duro entero preparado para comer aquí.' },
+  { id:41, emoji:'🍿', nombre:'Duro Entero Para Llevar',   precio:75,  categoria:'duro', tag:'tag-duro', tagLabel:'Duros', desc:'Duro entero preparado en bolsa para llevar.' },
+  { id:42, emoji:'🍿', nombre:'Duro Chico Preparado',      precio:55,  categoria:'duro', tag:'tag-duro', tagLabel:'Duros', desc:'Duro chico preparado para comer aquí.' },
+  { id:43, emoji:'🍿', nombre:'Duro Chico Para Llevar',    precio:60,  categoria:'duro', tag:'tag-duro', tagLabel:'Duros', desc:'Duro chico preparado en bolsa para llevar.' },
+  { id:44, emoji:'🍿', nombre:'Bolsita Preparada',         precio:55,  categoria:'duro', tag:'tag-duro', tagLabel:'Duros', desc:'Bolsita de duros preparada con tu sazón favorito.' },
+  { id:45, emoji:'🍿', nombre:'Bolsita Para Llevar',       precio:65,  categoria:'duro', tag:'tag-duro', tagLabel:'Duros', desc:'Bolsita de duros para llevar a donde quieras.' },
+  { id:46, emoji:'🍿', nombre:'Pedacería en Plato',        precio:65,  categoria:'duro', tag:'tag-duro', tagLabel:'Duros', desc:'Pedacería de duros preparada en plato.' },
+  { id:47, emoji:'🍿', nombre:'Cueritos Preparados',       precio:50,  categoria:'duro', tag:'tag-duro', tagLabel:'Duros', desc:'Cueritos preparados al gusto. Ácidos y sabrosos.' },
+  // ── TOSTITOS ──
+  { id:48, emoji:'🥗', nombre:'Tostiqueso',               precio:80,  categoria:'tostiqueso', tag:'tag-tostito', tagLabel:'Tostito', desc:'Elote, queso amarillo, crema, catsup y queso rayado.' },
+  { id:49, emoji:'🥗', nombre:'Tostiqueso Cueritos',      precio:90,  categoria:'tostiqueso_cueritos', tag:'tag-tostito', tagLabel:'Tostito', desc:'Elote, queso amarillo, crema, catsup, queso rayado y cueritos.' },
+  { id:50, emoji:'🌶️', nombre:'Tostipepino',              precio:90,  categoria:'tostipepino', tag:'tag-tostito', tagLabel:'Tostito', desc:'Pepino, jícama, cacahuate, dulce de tamarindo, salsa magui y chamoy.' },
+  { id:51, emoji:'🥗', nombre:'Tostiverdura',              precio:70,  categoria:'tostiverdura', tag:'tag-tostito', tagLabel:'Tostito', desc:'Repollo, tomate, aguacate, cuerito, crema y queso.' },
+  { id:52, emoji:'🥗', nombre:'Tostiverdura + Elote y Queso', precio:100, categoria:'tostiverdura_eq', tag:'tag-tostito', tagLabel:'Tostito', desc:'Repollo, tomate, aguacate, cuerito, crema, elote y queso amarillo.' },
+  // ── NACHOS Y MÁS ──
+  { id:53, emoji:'🧀', nombre:'Nachos',       precio:90,  categoria:'nacho', tag:'tag-nacho', tagLabel:'Nachos & Más', desc:'Elote, queso amarillo, crema, catsup y queso rayado sobre totopos crujientes.' },
+  { id:54, emoji:'🍜', nombre:'Maruchan',     precio:115, categoria:'maruchan', tag:'tag-nacho', tagLabel:'Nachos & Más', desc:'Elote, mantequilla, crema, mayonesa, tostitos, queso amarillo y queso rayado. ¡Nivel otro!' },
+  { id:55, emoji:'🥤', nombre:'Vaso Chetos',  precio:75,  categoria:'vasochetos', tag:'tag-nacho', tagLabel:'Nachos & Más', desc:'Preparado especial en vaso. El antojo que no falla.' },
+  // ── EXTRAS ──
+  { id:56, emoji:'🌽', nombre:'Elote y Queso Amarillo', precio:35, categoria:'extra', tag:'tag-extra', tagLabel:'Extra', desc:'Elote tierno con queso amarillo. Ideal para complementar tu pedido.' },
+  { id:57, emoji:'🥑', nombre:'Aguacate',               precio:15, categoria:'extra', tag:'tag-extra', tagLabel:'Extra', desc:'Aguacate fresco para agregar a lo que quieras.' },
+  { id:58, emoji:'🫙', nombre:'Cueritos',                precio:10, categoria:'extra', tag:'tag-extra', tagLabel:'Extra', desc:'Cueritos preparados como extra para tu antojo.' },
+  { id:59, emoji:'🥒', nombre:'Pepino',                  precio:20, categoria:'extra', tag:'tag-extra', tagLabel:'Extra', desc:'Pepino fresco como complemento extra.' },
 ];
 
 // =============================================
 //  CARRITO (estado)
 // =============================================
-let carrito = [];   // [ { id, nombre, precio, emoji, cantidad } ]
+let carrito = [];   // [ { id, nombre, precio, emoji, cantidad, personalizacion } ]
+
+// =============================================
+//  CONFIGURACIÓN DE OPCIONES POR CATEGORÍA
+// =============================================
+const opcionesPorCategoria = {
+  elote: [
+    { id: 'mantequilla', titulo: '🧈 Mantequilla',  opciones: ['Con mantequilla', 'Sin mantequilla'] },
+    { id: 'mayonesa',    titulo: '🥫 Mayonesa',      opciones: ['Con mayonesa', 'Sin mayonesa'] },
+    { id: 'crema',       titulo: '🥛 Crema',         opciones: ['Con crema', 'Sin crema'] },
+    { id: 'qblanco',     titulo: '🧀 Queso blanco',  opciones: ['Con queso blanco', 'Sin queso blanco'] },
+  ],
+  elote_emp: [
+    { id: 'mantequilla', titulo: '🧈 Mantequilla',   opciones: ['Con mantequilla', 'Sin mantequilla'] },
+    { id: 'mayonesa',    titulo: '🥫 Mayonesa',       opciones: ['Con mayonesa', 'Sin mayonesa'] },
+    { id: 'crema',       titulo: '🥛 Crema',          opciones: ['Con crema', 'Sin crema'] },
+    { id: 'qblanco',     titulo: '🧀 Queso blanco',   opciones: ['Con queso blanco', 'Sin queso blanco'] },
+    { id: 'qamarillo',   titulo: '🧀 Queso amarillo', opciones: ['Con queso amarillo', 'Sin queso amarillo'] },
+    { id: 'papitas',     titulo: '🥔 Papitas',        opciones: ['Sin papitas', 'Ruffles', 'Doritos rojos', 'Tostitos', 'Tostitos Flamin Hot'] },
+  ],
+  fresas_dubai: [
+    { id: 'pistache',  titulo: '🟢 Crema de pistache', opciones: ['Con crema de pistache', 'Sin crema de pistache'] },
+    { id: 'chocolate', titulo: '🍫 Chocolate',          opciones: ['Con chocolate', 'Sin chocolate'] },
+    { id: 'kataify',   titulo: '✨ Kataify',             opciones: ['Con kataify', 'Sin kataify'] },
+  ],
+  fresas: [
+    { id: 'mermelada',   titulo: '🍓 Mermelada de fresa', opciones: ['Con mermelada', 'Sin mermelada'] },
+    { id: 'crema',       titulo: '🥛 Crema dulce',        opciones: ['Con crema dulce', 'Sin crema dulce'] },
+    { id: 'chocolate',   titulo: '🍫 Chocolate',          opciones: ['Con chocolate', 'Sin chocolate'] },
+    { id: 'cremabatida', titulo: '🍦 Crema batida',       opciones: ['Con crema batida', 'Sin crema batida'] },
+  ],
+  duro: [
+    { id: 'repollo',   titulo: '🥬 Repollo',   opciones: ['Con repollo', 'Sin repollo'] },
+    { id: 'tomate',    titulo: '🍅 Tomate',     opciones: ['Con tomate', 'Sin tomate'] },
+    { id: 'aguacate',  titulo: '🥑 Aguacate',   opciones: ['Con aguacate', 'Sin aguacate'] },
+    { id: 'cueritos',  titulo: '🫙 Cueritos',   opciones: ['Con cueritos', 'Sin cueritos'] },
+    { id: 'crema',     titulo: '🥛 Crema',      opciones: ['Con crema', 'Sin crema'] },
+    { id: 'sal',       titulo: '🧂 Sal',         opciones: ['Con sal', 'Sin sal'] },
+    { id: 'limon',     titulo: '🍋 Limón',       opciones: ['Con limón', 'Sin limón'] },
+  ],
+  chorreado: [
+    { id: 'papitas',     titulo: '🥔 Papitas (1 bolsa)', opciones: ['Sin papitas', 'Ruffles', 'Doritos rojos', 'Tostitos', 'Tostitos Flamin Hot'] },
+    { id: 'mantequilla', titulo: '🧈 Mantequilla',       opciones: ['Con mantequilla', 'Sin mantequilla'] },
+    { id: 'mayonesa',    titulo: '🥫 Mayonesa',          opciones: ['Con mayonesa', 'Sin mayonesa'] },
+    { id: 'crema',       titulo: '🥛 Crema',             opciones: ['Con crema', 'Sin crema'] },
+    { id: 'qblanco',     titulo: '🧀 Queso blanco',      opciones: ['Con queso blanco', 'Sin queso blanco'] },
+    { id: 'qamarillo',   titulo: '🧀 Queso amarillo',    opciones: ['Con queso amarillo', 'Sin queso amarillo'] },
+  ],
+  nacho: [
+    { id: 'elote',     titulo: '🌽 Elote',         opciones: ['Con elote', 'Sin elote'] },
+    { id: 'crema',     titulo: '🥛 Crema',          opciones: ['Con crema', 'Sin crema'] },
+    { id: 'qamarillo', titulo: '🧀 Queso amarillo', opciones: ['Con queso amarillo', 'Sin queso amarillo'] },
+    { id: 'qblanco',   titulo: '🧀 Queso blanco',   opciones: ['Con queso blanco', 'Sin queso blanco'] },
+    { id: 'catsup',    titulo: '🍅 Catsup',          opciones: ['Con catsup', 'Sin catsup'] },
+  ],
+  vasochetos: [
+    { id: 'elote',     titulo: '🌽 Elote',         opciones: ['Con elote', 'Sin elote'] },
+    { id: 'qamarillo', titulo: '🧀 Queso amarillo', opciones: ['Con queso amarillo', 'Sin queso amarillo'] },
+    { id: 'crema',     titulo: '🥛 Crema',          opciones: ['Con crema', 'Sin crema'] },
+    { id: 'qrayado',   titulo: '🧀 Queso rayado',   opciones: ['Con queso rayado', 'Sin queso rayado'] },
+  ],
+  tostiqueso: [
+    { id: 'elote',     titulo: '🌽 Elote',         opciones: ['Con elote', 'Sin elote'] },
+    { id: 'qamarillo', titulo: '🧀 Queso amarillo', opciones: ['Con queso amarillo', 'Sin queso amarillo'] },
+    { id: 'crema',     titulo: '🥛 Crema',          opciones: ['Con crema', 'Sin crema'] },
+    { id: 'catsup',    titulo: '🍅 Catsup',          opciones: ['Con catsup', 'Sin catsup'] },
+    { id: 'qrayado',   titulo: '🧀 Queso rayado',   opciones: ['Con queso rayado', 'Sin queso rayado'] },
+  ],
+  tostiqueso_cueritos: [
+    { id: 'elote',     titulo: '🌽 Elote',         opciones: ['Con elote', 'Sin elote'] },
+    { id: 'qamarillo', titulo: '🧀 Queso amarillo', opciones: ['Con queso amarillo', 'Sin queso amarillo'] },
+    { id: 'crema',     titulo: '🥛 Crema',          opciones: ['Con crema', 'Sin crema'] },
+    { id: 'catsup',    titulo: '🍅 Catsup',          opciones: ['Con catsup', 'Sin catsup'] },
+    { id: 'qrayado',   titulo: '🧀 Queso rayado',   opciones: ['Con queso rayado', 'Sin queso rayado'] },
+    { id: 'cueritos',  titulo: '🫙 Cueritos',        opciones: ['Con cueritos', 'Sin cueritos'] },
+  ],
+  tostipepino: [
+    { id: 'pepino',    titulo: '🥒 Pepino',               opciones: ['Con pepino', 'Sin pepino'] },
+    { id: 'jicama',    titulo: '🌿 Jícama',               opciones: ['Con jícama', 'Sin jícama'] },
+    { id: 'cacahuate', titulo: '🥜 Cacahuate',            opciones: ['Con cacahuate', 'Sin cacahuate'] },
+    { id: 'tamarindo', titulo: '🍬 Dulce de tamarindo',   opciones: ['Con tamarindo', 'Sin tamarindo'] },
+    { id: 'magui',     titulo: '🧂 Salsa magui',          opciones: ['Con salsa magui', 'Sin salsa magui'] },
+    { id: 'chamoy',    titulo: '🍑 Chamoy',               opciones: ['Con chamoy', 'Sin chamoy'] },
+  ],
+  tostiverdura: [
+    { id: 'repollo',   titulo: '🥬 Repollo',   opciones: ['Con repollo', 'Sin repollo'] },
+    { id: 'tomate',    titulo: '🍅 Tomate',     opciones: ['Con tomate', 'Sin tomate'] },
+    { id: 'aguacate',  titulo: '🥑 Aguacate',   opciones: ['Con aguacate', 'Sin aguacate'] },
+    { id: 'cueritos',  titulo: '🫙 Cueritos',   opciones: ['Con cueritos', 'Sin cueritos'] },
+    { id: 'crema',     titulo: '🥛 Crema',      opciones: ['Con crema', 'Sin crema'] },
+  ],
+  tostiverdura_eq: [
+    { id: 'repollo',   titulo: '🥬 Repollo',         opciones: ['Con repollo', 'Sin repollo'] },
+    { id: 'tomate',    titulo: '🍅 Tomate',           opciones: ['Con tomate', 'Sin tomate'] },
+    { id: 'aguacate',  titulo: '🥑 Aguacate',         opciones: ['Con aguacate', 'Sin aguacate'] },
+    { id: 'cueritos',  titulo: '🫙 Cueritos',         opciones: ['Con cueritos', 'Sin cueritos'] },
+    { id: 'crema',     titulo: '🥛 Crema',            opciones: ['Con crema', 'Sin crema'] },
+    { id: 'elote',     titulo: '🌽 Elote',            opciones: ['Con elote', 'Sin elote'] },
+    { id: 'qamarillo', titulo: '🧀 Queso amarillo',   opciones: ['Con queso amarillo', 'Sin queso amarillo'] },
+  ],
+  raspa: [
+    { id: 'chamoy',   titulo: '🍑 Chamoy',          opciones: ['Con chamoy', 'Sin chamoy'] },
+    { id: 'chile',    titulo: '🌶️ Chile en polvo',  opciones: ['Con chile', 'Sin chile'] },
+  ],
+  especialidad: [],
+  obispo: [
+    { id: 'nieve', titulo: '🍦 Tipo de nieve', opciones: ['Nieve de raspa', 'Nieve de crema', 'Nieve de garrafa'] },
+  ],
+  maruchan: [
+    { id: 'elote',     titulo: '🌽 Elote',         opciones: ['Con elote', 'Sin elote'] },
+    { id: 'mantequilla',titulo: '🧈 Mantequilla',  opciones: ['Con mantequilla', 'Sin mantequilla'] },
+    { id: 'crema',     titulo: '🥛 Crema',          opciones: ['Con crema', 'Sin crema'] },
+    { id: 'mayonesa',  titulo: '🥫 Mayonesa',       opciones: ['Con mayonesa', 'Sin mayonesa'] },
+    { id: 'tostitos',  titulo: '🥔 Tostitos',       opciones: ['Con tostitos', 'Sin tostitos'] },
+    { id: 'qamarillo', titulo: '🧀 Queso amarillo', opciones: ['Con queso amarillo', 'Sin queso amarillo'] },
+    { id: 'qrayado',   titulo: '🧀 Queso rayado',   opciones: ['Con queso rayado', 'Sin queso rayado'] },
+  ],
+  crema: [
+    { id: 'mermelada',   titulo: '🍓 Mermelada',   opciones: ['Con mermelada', 'Sin mermelada'] },
+    { id: 'chocolate',   titulo: '🍫 Chocolate',   opciones: ['Con chocolate', 'Sin chocolate'] },
+    { id: 'chispas',     titulo: '✨ Chispas',      opciones: ['Con chispas', 'Sin chispas'] },
+  ],
+};
+
+// =============================================
+//  ESTADO DEL MODAL
+// =============================================
+let modalProductoId = null;
+let modalSelecciones = {}; // { grupoId: opcionElegida }
+
+function abrirModalPersonalizacion(id) {
+  const prod = catalogo.find(p => p.id === id);
+  if (!prod) return;
+
+  modalProductoId = id;
+  modalSelecciones = {};
+
+  // Llenar encabezado
+  document.getElementById('modal-emoji').textContent  = prod.emoji;
+  document.getElementById('modal-nombre').textContent = prod.nombre;
+  document.getElementById('modal-precio').textContent = `$${prod.precio}`;
+
+  // Construir opciones
+  const grupos = opcionesPorCategoria[prod.categoria] || [];
+  const body   = document.getElementById('modal-opciones');
+  body.innerHTML = '';
+
+  grupos.forEach(grupo => {
+    const div = document.createElement('div');
+    div.className = 'opcion-grupo';
+    div.innerHTML = `<label class="grupo-titulo">${grupo.titulo}</label>
+      <div class="opciones-chips" id="chips-${grupo.id}">
+        ${grupo.opciones.map(op => `
+          <button class="chip-opcion" data-grupo="${grupo.id}" data-valor="${op}"
+            onclick="seleccionarChip(this, '${grupo.id}', '${op}')">
+            ${op}
+          </button>`).join('')}
+      </div>`;
+    body.appendChild(div);
+
+    // Preseleccionar primera opción
+    modalSelecciones[grupo.id] = grupo.opciones[0];
+    setTimeout(() => {
+      const primer = body.querySelector(`[data-grupo="${grupo.id}"]`);
+      if (primer) primer.classList.add('seleccionado');
+    }, 0);
+  });
+
+  // Campo de notas
+  const notasDiv = document.createElement('div');
+  notasDiv.className = 'opcion-grupo';
+  notasDiv.innerHTML = `
+    <label class="grupo-titulo">📝 Notas adicionales</label>
+    <textarea class="notas-campo" id="modal-notas" rows="2"
+      placeholder="Ej: sin sal, extra limón, alergia a…"></textarea>`;
+  body.appendChild(notasDiv);
+
+  // Mostrar modal
+  document.getElementById('modal-personal').classList.add('abierto');
+  document.body.style.overflow = 'hidden';
+}
+
+function seleccionarChip(el, grupoId, valor) {
+  // Desactivar otros chips del mismo grupo
+  document.querySelectorAll(`[data-grupo="${grupoId}"]`)
+    .forEach(c => c.classList.remove('seleccionado'));
+  el.classList.add('seleccionado');
+  modalSelecciones[grupoId] = valor;
+}
+
+function cerrarModal() {
+  document.getElementById('modal-personal').classList.remove('abierto');
+  document.body.style.overflow = '';
+  modalProductoId = null;
+}
+
+function cerrarModalSiOverlay(e) {
+  if (e.target === document.getElementById('modal-personal')) cerrarModal();
+}
+
+function confirmarPersonalizacion() {
+  if (modalProductoId === null) return;
+  const prod = catalogo.find(p => p.id === modalProductoId);
+  const notas = document.getElementById('modal-notas').value.trim();
+
+  // Armar texto de personalización
+  const partes = Object.values(modalSelecciones);
+  if (notas) partes.push(`Nota: ${notas}`);
+  const personalizacion = partes.join(', ') || '';
+
+  // Agregar o actualizar en carrito
+  // Si existe el mismo producto CON la misma personalización, solo sube cantidad
+  // Si la personalización es diferente, se agrega como entrada separada
+  const existente = carrito.find(c => c.id === prod.id && c.personalizacion === personalizacion);
+  if (existente) {
+    existente.cantidad++;
+  } else {
+    carrito.push({ ...prod, cantidad: 1, personalizacion });
+  }
+
+  // Actualizar botón en tarjeta
+  const btnProd = document.getElementById(`btn-prod-${prod.id}`);
+  if (btnProd) { btnProd.textContent = '✓ Agregado'; btnProd.classList.add('agregado'); }
+
+  cerrarModal();
+  actualizarUI();
+  mostrarToast(`${prod.emoji} ${prod.nombre} agregado al carrito`);
+}
 
 // =============================================
 //  RENDER PRODUCTOS
@@ -738,10 +1220,61 @@ renderProductos(catalogo);
 // =============================================
 //  FILTRO POR CATEGORÍA
 // =============================================
+function buscar(texto) {
+  const clear = document.getElementById('buscador-clear');
+  clear.classList.toggle('visible', texto.length > 0);
+
+  // Desactivar filtro de categoría activo visualmente
+  if (texto.length > 0) {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('activo'));
+  } else {
+    // Si borra todo, volver a "Todos"
+    const btnTodos = document.querySelector('.cat-btn');
+    btnTodos.classList.add('activo');
+    renderProductos(catalogo);
+    return;
+  }
+
+  const q = texto.toLowerCase().trim();
+  const lista = catalogo.filter(p =>
+    p.nombre.toLowerCase().includes(q) ||
+    p.desc.toLowerCase().includes(q) ||
+    p.tagLabel.toLowerCase().includes(q)
+  );
+
+  const grid = document.getElementById('productos-grid');
+  if (lista.length === 0) {
+    grid.innerHTML = `
+      <div class="no-resultados">
+        <span class="emoji-vacio">🔍</span>
+        <p>No encontramos <strong>"${texto}"</strong>.<br>¡Intenta con otro nombre!</p>
+      </div>`;
+  } else {
+    renderProductos(lista);
+  }
+}
+
+function limpiarBusqueda() {
+  const input = document.getElementById('buscador');
+  input.value = '';
+  buscar('');
+  input.focus();
+}
+
 function filtrar(cat, btn) {
+  // Limpiar buscador al filtrar por categoría
+  const input = document.getElementById('buscador');
+  if (input) { input.value = ''; document.getElementById('buscador-clear').classList.remove('visible'); }
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('activo'));
   btn.classList.add('activo');
-  const lista = cat === 'todos' ? catalogo : catalogo.filter(p => p.categoria === cat);
+  const categoriasFiltro = {
+    elote:       ['elote', 'elote_emp'],
+    fresas:      ['fresas', 'fresas_dubai'],
+    especialidad:['especialidad', 'obispo'],
+    tostito:     ['tostiqueso', 'tostiqueso_cueritos', 'tostipepino', 'tostiverdura', 'tostiverdura_eq'],
+    nacho:       ['nacho', 'maruchan', 'vasochetos'],
+  };
+  const lista = cat === 'todos' ? catalogo : catalogo.filter(p => (categoriasFiltro[cat] || [cat]).includes(p.categoria));
   renderProductos(lista);
 }
 
@@ -750,17 +1283,22 @@ function filtrar(cat, btn) {
 // =============================================
 function agregarAlCarrito(id) {
   const prod = catalogo.find(p => p.id === id);
-  const existente = carrito.find(c => c.id === id);
-  if (existente) {
-    existente.cantidad++;
+  if (!prod) return;
+  // Si la categoría tiene opciones, abrir modal; si no, agregar directo
+  if (opcionesPorCategoria[prod.categoria] && opcionesPorCategoria[prod.categoria].length > 0) {
+    abrirModalPersonalizacion(id);
   } else {
-    carrito.push({ ...prod, cantidad: 1 });
+    const existente = carrito.find(c => c.id === id);
+    if (existente) {
+      existente.cantidad++;
+    } else {
+      carrito.push({ ...prod, cantidad: 1, personalizacion: '' });
+    }
+    const btnProd = document.getElementById(`btn-prod-${id}`);
+    if (btnProd) { btnProd.textContent = '✓ Agregado'; btnProd.classList.add('agregado'); }
+    actualizarUI();
+    mostrarToast(`${prod.emoji} ${prod.nombre} agregado al carrito`);
   }
-  // Actualizar botón en la tarjeta
-  const btnProd = document.getElementById(`btn-prod-${id}`);
-  if (btnProd) { btnProd.textContent = '✓ Agregado'; btnProd.classList.add('agregado'); }
-  actualizarUI();
-  mostrarToast(`${prod.emoji} ${prod.nombre} agregado al carrito`);
 }
 
 function cambiarCantidad(id, delta) {
@@ -799,7 +1337,7 @@ function actualizarUI() {
   // Total en panel
   document.getElementById('total-monto').textContent  = fmtPrecio;
   // Botón WhatsApp
-  actualizarBotonWhatsApp();
+  document.getElementById('btn-whatsapp').disabled    = carrito.length === 0;
 
   renderCarrito();
 }
@@ -822,6 +1360,7 @@ function renderCarrito() {
       <div class="item-emoji">${item.emoji}</div>
       <div class="item-info">
         <strong>${item.nombre}</strong>
+        ${item.personalizacion ? `<span class="item-personal">✏️ ${item.personalizacion}</span>` : ''}
         <span class="item-precio">$${item.precio} c/u · Subtotal: $${item.precio * item.cantidad}</span>
       </div>
       <div class="item-controles">
@@ -848,58 +1387,53 @@ function cerrarCarrito() {
 }
 
 // =============================================
-//  VALIDAR NOMBRE
-// =============================================
-function validarNombre() {
-  const input = document.getElementById('cliente-nombre');
-  const error = document.getElementById('nombre-error');
-  const nombre = input.value.trim();
-  if (nombre.length > 0) {
-    input.classList.remove('error');
-    error.classList.remove('visible');
-  }
-  actualizarBotonWhatsApp();
-}
-
-function actualizarBotonWhatsApp() {
-  const nombre = document.getElementById('cliente-nombre').value.trim();
-  const btn = document.getElementById('btn-whatsapp');
-  btn.disabled = carrito.length === 0 || nombre.length === 0;
-}
-
-// =============================================
 //  PEDIDO POR WHATSAPP
 //  ⚠️ CAMBIA "521XXXXXXXXXX" por tu número real
 //  Formato: código de país + número sin espacios
 //  Ejemplo México: 5216181234567
 // =============================================
-const NUMERO_WHATSAPP = '521XXXXXXXXXX'; // <--- PON TU NÚMERO AQUÍ
+const NUMERO_WHATSAPP = '528714024914'; // Nevería Estelita
 
 function hacerPedidoWhatsApp() {
   if (carrito.length === 0) return;
   const nombre = document.getElementById('cliente-nombre').value.trim();
   if (!nombre) {
-    const input = document.getElementById('cliente-nombre');
-    const error = document.getElementById('nombre-error');
-    input.classList.add('error');
-    error.classList.add('visible');
-    input.focus();
+    const campo = document.getElementById('cliente-nombre');
+    const wrapper = document.getElementById('nombre-wrapper');
+    wrapper.classList.add('error');
+    campo.focus();
+    setTimeout(() => wrapper.classList.remove('error'), 600);
+    mostrarToast('⚠️ Por favor escribe tu nombre');
     return;
   }
 
   const lineasProductos = carrito
-    .map(item => `  • ${item.cantidad}x ${item.nombre} — $${item.precio * item.cantidad}`)
+    .map(item => {
+      const base = `  • ${item.cantidad}x ${item.nombre} — $${item.precio * item.cantidad}`;
+      return item.personalizacion ? `${base}\n    _(${item.personalizacion})_` : base;
+    })
     .join('\n');
 
   const mensaje =
-    `¡Hola! Soy *${nombre}* 👋\n` +
-    `Me gustaría hacer el siguiente pedido en *Nevería Estelita*:\n\n` +
+    `¡Hola! 😊 Soy *${nombre}* y me gustaría hacer el siguiente pedido en *Nevería y Snacks Estelita*:\n\n` +
     `${lineasProductos}\n\n` +
     `💰 *Total a pagar: $${totalPrecio()}*\n\n` +
     `¿Pueden confirmarlo? ¡Gracias! 🍦`;
 
   const urlWhatsApp = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
   window.open(urlWhatsApp, '_blank');
+
+  // Vaciar carrito y limpiar nombre después de enviar
+  carrito = [];
+  document.getElementById('cliente-nombre').value = '';
+  // Resetear todos los botones de productos
+  document.querySelectorAll('.btn-agregar').forEach(b => {
+    b.textContent = '+ Agregar';
+    b.classList.remove('agregado');
+  });
+  cerrarCarrito();
+  actualizarUI();
+  mostrarToast('✅ ¡Pedido enviado! Gracias 🍦');
 }
 
 // =============================================
