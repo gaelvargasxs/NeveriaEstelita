@@ -1409,16 +1409,18 @@ function hacerPedidoWhatsApp() {
 
   const lineasProductos = carrito
     .map(item => {
-      const base = `  • ${item.cantidad}x ${item.nombre} — $${item.precio * item.cantidad}`;
-      return item.personalizacion ? `${base}\n    _(${item.personalizacion})_` : base;
+      const base = `*${item.nombre}* x${item.cantidad}\n   $${item.precio * item.cantidad}`;
+      return item.personalizacion ? `${base}\n   ${item.personalizacion}` : base;
     })
-    .join('\n');
+    .join('\n\n');
 
   const mensaje =
-    `¡Hola! 😊 Soy *${nombre}* y me gustaría hacer el siguiente pedido en *Nevería y Snacks Estelita*:\n\n` +
+    `━━━ *MI PEDIDO* ━━━\n` +
+    `*${nombre}*\n\n` +
     `${lineasProductos}\n\n` +
-    `💰 *Total a pagar: $${totalPrecio()}*\n\n` +
-    `¿Pueden confirmarlo? ¡Gracias! 🍦`;
+    `━━━━━━━━━━━━━━━\n` +
+    `*Total: $${totalPrecio()}*\n` +
+    `━━━━━━━━━━━━━━━`;
 
   const urlWhatsApp = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
   window.open(urlWhatsApp, '_blank');
