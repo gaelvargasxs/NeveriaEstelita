@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nevería Estelita</title>
+  <title>Nevería Estelita ✨</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
@@ -798,7 +798,7 @@
   <div class="categorias">
     <button class="cat-btn activo" onclick="filtrar('todos', this)">🌈 Todos</button>
     <button class="cat-btn" onclick="filtrar('fresas', this)">🍓 Fresas</button>
-    <button class="cat-btn" onclick="filtrar('raspa', this)">🧊 Raspados</button>
+    <button class="cat-btn" onclick="filtrar('raspa', this)">🧊 Raspas</button>
     <button class="cat-btn" onclick="filtrar('crema', this)">🍦 Nieve de Crema</button>
     <button class="cat-btn" onclick="filtrar('especialidad', this)">⭐ Especialidades</button>
     <button class="cat-btn" onclick="filtrar('chocolate', this)">🍫 Chocolatísimos</button>
@@ -1012,6 +1012,7 @@ const catalogo = [
   { id:3,  emoji:'🍰', nombre:'Fresas con Cheesecake',      precio:100, categoria:'fresas',      tag:'tag-fresas',      tagLabel:'Fresas',         desc:'Fresas con crema y trozos de cheesecake. ¡Una delicia!' },
   { id:4,  emoji:'🍫', nombre:'Fresas con Chocolate',       precio:100, categoria:'fresas',      tag:'tag-fresas',      tagLabel:'Fresas',         desc:'Fresas con crema bañadas en chocolate fundido.' },
   { id:5,  emoji:'✨', nombre:'Fresas Dubai',               precio:115, categoria:'fresas_dubai',      tag:'tag-fresas',      tagLabel:'Fresas',         desc:'La versión premium de nuestras fresas. ¡Tienen que probarlas!' },
+  { id:60, emoji:'🥧', nombre:'Fresas con Pay',             precio:100, categoria:'fresas',      tag:'tag-fresas',      tagLabel:'Fresas',         desc:'Fresas con crema y trozos de pay. ¡Dulce y delicioso!' },
   // ── NIEVE DE RASPA ──
   { id:6,  emoji:'🧊', nombre:'Raspa de Agua',              precio:30,  categoria:'raspa',       tag:'tag-raspa',       tagLabel:'Raspa',          desc:'Raspado de hielo con sabor de agua fresca. Fresquísimo.' },
   { id:7,  emoji:'🫙', nombre:'Raspa de Mermelada',         precio:65,  categoria:'raspa',       tag:'tag-raspa',       tagLabel:'Raspa',          desc:'Raspado bañado en mermelada. Dulce y muy rico.' },
@@ -1151,7 +1152,7 @@ const opcionesPorCategoria = {
     { id: 'crema',       titulo: '🥛 Crema',          opciones: ['Con crema', 'Sin crema'] },
     { id: 'qblanco',     titulo: '🧀 Queso blanco',   opciones: ['Con queso blanco', 'Sin queso blanco'] },
     { id: 'qamarillo',   titulo: '🧀 Queso amarillo', opciones: ['Con queso amarillo', 'Sin queso amarillo'] },
-    { id: 'papitas',     titulo: '🥔 Papitas',        opciones: ['Sin papitas', 'Ruffles', 'Doritos rojos', 'Tostitos', 'Tostitos Flamin Hot'] },
+    { id: 'papitas',     titulo: '🥔 Papitas',        opciones: ['Ruffles', 'Doritos rojos', 'Tostitos', 'Tostitos Flamin Hot'] },
   ],
   fresas_dubai: [
     { id: 'pistache',  titulo: '🟢 Crema de pistache', opciones: ['Con crema de pistache', 'Sin crema de pistache'] },
@@ -1200,6 +1201,7 @@ const opcionesPorCategoria = {
     { id: 'crema',     titulo: '🥛 Crema',          opciones: ['Con crema', 'Sin crema'] },
     { id: 'catsup',    titulo: '🍅 Catsup',          opciones: ['Con catsup', 'Sin catsup'] },
     { id: 'qrayado',   titulo: '🧀 Queso rayado',   opciones: ['Con queso rayado', 'Sin queso rayado'] },
+    { id: 'papitas',   titulo: '🥔 Papitas',        opciones: ['Ruffles', 'Doritos rojos', 'Tostitos', 'Tostitos Flamin Hot'] },
   ],
   tostiqueso_cueritos: [
     { id: 'elote',     titulo: '🌽 Elote',         opciones: ['Con elote', 'Sin elote'] },
@@ -1208,6 +1210,7 @@ const opcionesPorCategoria = {
     { id: 'catsup',    titulo: '🍅 Catsup',          opciones: ['Con catsup', 'Sin catsup'] },
     { id: 'qrayado',   titulo: '🧀 Queso rayado',   opciones: ['Con queso rayado', 'Sin queso rayado'] },
     { id: 'cueritos',  titulo: '🫙 Cueritos',        opciones: ['Con cueritos', 'Sin cueritos'] },
+    { id: 'papitas',   titulo: '🥔 Papitas',        opciones: ['Ruffles', 'Doritos rojos', 'Tostitos', 'Tostitos Flamin Hot'] },
   ],
   tostipepino: [
     { id: 'pepino',    titulo: '🥒 Pepino',               opciones: ['Con pepino', 'Sin pepino'] },
@@ -1216,6 +1219,7 @@ const opcionesPorCategoria = {
     { id: 'tamarindo', titulo: '🍬 Dulce de tamarindo',   opciones: ['Con tamarindo', 'Sin tamarindo'] },
     { id: 'magui',     titulo: '🧂 Salsa magui',          opciones: ['Con salsa magui', 'Sin salsa magui'] },
     { id: 'chamoy',    titulo: '🍑 Chamoy',               opciones: ['Con chamoy', 'Sin chamoy'] },
+    { id: 'papitas',   titulo: '🥔 Papitas',              opciones: ['Ruffles', 'Doritos rojos', 'Tostitos', 'Tostitos Flamin Hot'] },
   ],
   tostiverdura: [
     { id: 'repollo',   titulo: '🥬 Repollo',   opciones: ['Con repollo', 'Sin repollo'] },
@@ -1223,6 +1227,7 @@ const opcionesPorCategoria = {
     { id: 'aguacate',  titulo: '🥑 Aguacate',   opciones: ['Con aguacate', 'Sin aguacate'] },
     { id: 'cueritos',  titulo: '🫙 Cueritos',   opciones: ['Con cueritos', 'Sin cueritos'] },
     { id: 'crema',     titulo: '🥛 Crema',      opciones: ['Con crema', 'Sin crema'] },
+    { id: 'papitas',   titulo: '🥔 Papitas',    opciones: ['Ruffles', 'Doritos rojos', 'Tostitos', 'Tostitos Flamin Hot'] },
   ],
   tostiverdura_eq: [
     { id: 'repollo',   titulo: '🥬 Repollo',         opciones: ['Con repollo', 'Sin repollo'] },
@@ -1232,6 +1237,7 @@ const opcionesPorCategoria = {
     { id: 'crema',     titulo: '🥛 Crema',            opciones: ['Con crema', 'Sin crema'] },
     { id: 'elote',     titulo: '🌽 Elote',            opciones: ['Con elote', 'Sin elote'] },
     { id: 'qamarillo', titulo: '🧀 Queso amarillo',   opciones: ['Con queso amarillo', 'Sin queso amarillo'] },
+    { id: 'papitas',   titulo: '🥔 Papitas',          opciones: ['Ruffles', 'Doritos rojos', 'Tostitos', 'Tostitos Flamin Hot'] },
   ],
   raspa: [
     { id: 'sabores', tipo: 'multi', titulo: '🍧 Elige tus sabores', opciones: saboresRaspa },
@@ -1245,7 +1251,7 @@ const opcionesPorCategoria = {
     { id: 'mantequilla',titulo: '🧈 Mantequilla',  opciones: ['Con mantequilla', 'Sin mantequilla'] },
     { id: 'crema',     titulo: '🥛 Crema',          opciones: ['Con crema', 'Sin crema'] },
     { id: 'mayonesa',  titulo: '🥫 Mayonesa',       opciones: ['Con mayonesa', 'Sin mayonesa'] },
-    { id: 'tostitos',  titulo: '🥔 Tostitos',       opciones: ['Con tostitos', 'Sin tostitos'] },
+    { id: 'papitas',   titulo: '🥔 Papitas',        opciones: ['Ruffles', 'Doritos rojos', 'Tostitos', 'Tostitos Flamin Hot'] },
     { id: 'qamarillo', titulo: '🧀 Queso amarillo', opciones: ['Con queso amarillo', 'Sin queso amarillo'] },
     { id: 'qrayado',   titulo: '🧀 Queso rayado',   opciones: ['Con queso rayado', 'Sin queso rayado'] },
   ],
@@ -1700,7 +1706,7 @@ function hacerPedidoWhatsApp() {
     .join('\n\n');
 
   let entregaTexto = tipoEntrega === 'domicilio'
-    ? `🛵 *Entrega: A domicilio* \n🏠 Dirección: ${direccion}`
+    ? `🛵 *Entrega: A domicilio* (+$${RECARGO_DOMICILIO} por producto)\n🏠 Dirección: ${direccion}`
     : `🏬 *Entrega: Recoger en tienda*`;
 
   if (tipoEntrega === 'domicilio' && ubicacionLat && ubicacionLng) {
