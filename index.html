@@ -1700,7 +1700,7 @@ function hacerPedidoWhatsApp() {
     .join('\n\n');
 
   let entregaTexto = tipoEntrega === 'domicilio'
-    ? `🛵 *Entrega: A domicilio* (+$${RECARGO_DOMICILIO} por producto)\n🏠 Dirección: ${direccion}`
+    ? `🛵 *Entrega: A domicilio* \n🏠 Dirección: ${direccion}`
     : `🏬 *Entrega: Recoger en tienda*`;
 
   if (tipoEntrega === 'domicilio' && ubicacionLat && ubicacionLng) {
