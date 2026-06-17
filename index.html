@@ -263,6 +263,18 @@
     .chip-opcion.seleccionado {
       background: var(--morado); color: #fff; border-color: var(--morado);
     }
+    .chip-opcion.chip-deshabilitado {
+      opacity: .35; cursor: not-allowed;
+    }
+    .grupo-titulo-row {
+      display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+    }
+    .grupo-contador {
+      font-weight: 800; font-size: .78rem; color: var(--gris);
+      background: var(--morado-claro); border-radius: 50px;
+      padding: .1rem .6rem; white-space: nowrap;
+    }
+    .grupo-contador.completo { background: var(--verde-claro); color: #1a9e6b; }
     .notas-campo {
       width: 100%; border: 2px solid var(--morado-claro);
       border-radius: 14px; padding: .75rem 1rem;
@@ -381,6 +393,14 @@
       text-align: center;
       padding: 1.5rem 1rem .5rem;
       background: linear-gradient(135deg, var(--rosa-claro), var(--morado-claro));
+      height: 150px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .card-emoji.con-imagen { padding: 0; }
+    .card-img {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
     }
     .card-body { padding: 1rem 1.25rem 1.25rem; flex: 1; display: flex; flex-direction: column; }
     .card-tag {
@@ -551,6 +571,60 @@
     }
 
     /* =============================================
+       SELECTOR DE ENTREGA (Domicilio / Recoger)
+    ============================================= */
+    .entrega-wrapper { margin-bottom: 1rem; }
+    .entrega-opciones { display: flex; gap: .6rem; }
+    .entrega-btn {
+      flex: 1; padding: .65rem .5rem; border-radius: 16px;
+      border: 2.5px solid var(--morado-claro); background: var(--blanco);
+      color: var(--morado); font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: .8rem; cursor: pointer; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: .15rem;
+      transition: all .2s;
+    }
+    .entrega-btn:hover { border-color: var(--morado); background: var(--morado-claro); }
+    .entrega-btn .e-icon { font-size: 1.3rem; }
+    .entrega-btn .e-nota { font-size: .68rem; font-weight: 700; opacity: .7; }
+    .entrega-btn.seleccionado {
+      background: var(--morado); color: #fff; border-color: var(--morado);
+    }
+    .entrega-wrapper.error .entrega-opciones { animation: shake .3s; }
+    .entrega-wrapper.error .entrega-btn { border-color: #e05555; }
+
+    .ubicacion-wrapper {
+      display: none; flex-direction: column; gap: .6rem;
+      margin-bottom: 1rem;
+      background: var(--azul-claro); border-radius: 16px;
+      padding: .85rem .9rem;
+    }
+    .ubicacion-wrapper.visible { display: flex; }
+    .ubicacion-wrapper.error { animation: shake .3s; }
+    .ubicacion-label {
+      font-size: .78rem; font-weight: 800; color: #1a7fc1;
+      letter-spacing: .02em;
+    }
+    .direccion-campo {
+      width: 100%; border: 2px solid #b8e2ff;
+      border-radius: 12px; padding: .6rem .8rem;
+      font-family: 'Nunito', sans-serif; font-size: .85rem;
+      color: var(--texto); resize: none; outline: none;
+      background: var(--blanco); transition: border-color .2s;
+    }
+    .direccion-campo:focus { border-color: #2b8fd4; }
+    .direccion-campo::placeholder { color: var(--gris); font-weight: 600; }
+    .btn-ubicacion {
+      display: flex; align-items: center; justify-content: center; gap: .4rem;
+      background: var(--blanco); border: 2px solid #2b8fd4;
+      color: #2b8fd4; border-radius: 50px; padding: .55rem .8rem;
+      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .82rem;
+      cursor: pointer; transition: all .2s;
+    }
+    .btn-ubicacion:hover { background: #2b8fd4; color: #fff; }
+    .btn-ubicacion.capturada { background: var(--verde); border-color: var(--verde); color: #fff; }
+    .ubicacion-nota { font-size: .72rem; color: #1a7fc1; line-height: 1.4; }
+
+    /* =============================================
        NOSOTROS / INFO
     ============================================= */
     .nosotros-grid {
@@ -655,7 +729,8 @@
       .hamburger { display: flex; }
       .hero { padding: 3rem 1rem 2.5rem; }
       .productos-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
-      .card-emoji { font-size: 3rem; padding: 1rem .75rem .5rem; }
+      .card-emoji { font-size: 3rem; height: 130px; padding: 1rem .75rem .5rem; }
+      .card-emoji.con-imagen { padding: 0; }
     }
   </style>
 </head>
@@ -823,6 +898,31 @@
           placeholder="¿Para quién es el pedido?" maxlength="40" />
       </div>
     </div>
+    <p style="font-size:.78rem; font-weight:800; color:var(--morado); margin-bottom:.4rem; letter-spacing:.03em;">🚚 ENTREGA</p>
+    <div class="entrega-wrapper" id="entrega-wrapper">
+      <div class="entrega-opciones">
+        <button type="button" class="entrega-btn" id="entrega-domicilio" onclick="seleccionarEntrega('domicilio')">
+          <span class="e-icon">🛵</span>
+          A domicilio
+          <span class="e-nota">+$5 c/u</span>
+        </button>
+        <button type="button" class="entrega-btn" id="entrega-recoger" onclick="seleccionarEntrega('recoger')">
+          <span class="e-icon">🏬</span>
+          Recoger ahí
+          <span class="e-nota">Sin costo extra</span>
+        </button>
+      </div>
+    </div>
+    <div class="ubicacion-wrapper" id="ubicacion-wrapper">
+      <span class="ubicacion-label">📍 ¿A dónde te lo llevamos?</span>
+      <textarea class="direccion-campo" id="direccion-campo" rows="2"
+        placeholder="Calle, número, colonia y alguna referencia (casa de qué color, entre qué calles, etc.)"
+        maxlength="200"></textarea>
+      <button type="button" class="btn-ubicacion" id="btn-ubicacion" onclick="solicitarUbicacion()">
+        📡 Compartir mi ubicación GPS
+      </button>
+      <span class="ubicacion-nota" id="ubicacion-nota">Esto ayuda al repartidor a encontrarte más rápido y exacto. Es opcional, pero muy recomendable 🙌</span>
+    </div>
     <div class="total-row">
       <span class="total-label">Total a pagar:</span>
       <span class="total-monto" id="total-monto">$0</span>
@@ -873,8 +973,38 @@
 <!-- ===== JAVASCRIPT ===== -->
 <script>
 // =============================================
+//  SABORES (tomados de los banners de la nevería)
+// =============================================
+// Sabores disponibles para Nieve de Raspa
+const saboresRaspa = ['Vainilla','Limón','Fresa','Mango','Tamarindo','Coco','Oreo','Chocolate','Piña','Chamoy','Nuez','Guayaba','Queso Crema','Zarzamora','Pistache','Cereza','Cajeta'];
+
+// Sabores disponibles para Nieve de Crema
+const saboresCrema = ['Fresa','Coco','Nuez','Vainilla','Chocolate','Mango','Oreo','Gansito','Cajeta','Chocoreta'];
+
+// Máximo de sabores que se pueden combinar en una Nieve de Raspa
+// (se piden combinados, normalmente entre 4 y 5)
+const MAX_SABORES_RASPA = 5;
+
+// Máximo de sabores ("bolitas") según el tamaño/presentación de Nieve de Crema.
+// 👉 Estos números son un ejemplo: ajústalos a las bolitas reales que lleva cada tamaño.
+const MAX_SABORES_CREMA = {
+  8:  2,  // Nieve de Crema – Vaso Chico
+  9:  4,  // Nieve de Crema – Vaso Mediano
+  10: 6,  // Nieve de Crema – Vaso Grande
+  11: 2,  // Nieve de Crema – Barquillo
+  12: 4,  // Nieve de Crema – Canasta
+  13: 8,  // Litro de Nieve
+};
+
+// =============================================
 //  CATÁLOGO DE PRODUCTOS
 // =============================================
+// 👉 Para poner la foto real de un producto, solo agrega el campo "imagen"
+//    con la ruta o link de la foto, así:
+//    { id:1, emoji:'🍓', nombre:'Fresas con Crema Sencillas', precio:70,
+//      categoria:'fresas', imagen:'images/fresas-sencillas.jpg', ... }
+//    Si no le pones "imagen" (o la foto no carga), se queda el emoji
+//    con el fondo morado/rosa como hasta ahora. No hace falta tocar nada más.
 const catalogo = [
   // ── FRESAS CON CREMA ──
   { id:1,  emoji:'🍓', nombre:'Fresas con Crema Sencillas', precio:70,  categoria:'fresas',      tag:'tag-fresas',      tagLabel:'Fresas',         desc:'Fresas frescas bañadas en crema. ¡El clásico de siempre!' },
@@ -960,6 +1090,52 @@ const catalogo = [
 let carrito = [];   // [ { id, nombre, precio, emoji, cantidad, personalizacion } ]
 
 // =============================================
+//  ENTREGA (domicilio / recoger)
+// =============================================
+let tipoEntrega = null; // 'domicilio' | 'recoger'
+const RECARGO_DOMICILIO = 5; // $ extra por producto si es a domicilio
+let ubicacionLat = null;
+let ubicacionLng = null;
+
+function seleccionarEntrega(tipo) {
+  tipoEntrega = tipo;
+  document.getElementById('entrega-domicilio').classList.toggle('seleccionado', tipo === 'domicilio');
+  document.getElementById('entrega-recoger').classList.toggle('seleccionado', tipo === 'recoger');
+  document.getElementById('entrega-wrapper').classList.remove('error');
+  document.getElementById('ubicacion-wrapper').classList.toggle('visible', tipo === 'domicilio');
+  actualizarUI();
+}
+
+function solicitarUbicacion() {
+  if (!navigator.geolocation) {
+    mostrarToast('⚠️ Tu navegador no soporta ubicación GPS');
+    return;
+  }
+  const btn = document.getElementById('btn-ubicacion');
+  const nota = document.getElementById('ubicacion-nota');
+  btn.textContent = '📡 Obteniendo ubicación...';
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      ubicacionLat = pos.coords.latitude;
+      ubicacionLng = pos.coords.longitude;
+      btn.textContent = '✅ Ubicación compartida';
+      btn.classList.add('capturada');
+      nota.textContent = '¡Listo! Tu ubicación exacta se incluirá en el pedido 📍';
+      mostrarToast('📍 Ubicación capturada');
+    },
+    () => {
+      btn.textContent = '📡 Compartir mi ubicación GPS';
+      mostrarToast('⚠️ No pudimos obtener tu ubicación. Puedes seguir solo con la dirección escrita.');
+    }
+  );
+}
+
+function precioUnitario(item) {
+  return item.precio + (tipoEntrega === 'domicilio' ? RECARGO_DOMICILIO : 0);
+}
+
+// =============================================
 //  CONFIGURACIÓN DE OPCIONES POR CATEGORÍA
 // =============================================
 const opcionesPorCategoria = {
@@ -998,7 +1174,7 @@ const opcionesPorCategoria = {
     { id: 'limon',     titulo: '🍋 Limón',       opciones: ['Con limón', 'Sin limón'] },
   ],
   chorreado: [
-    { id: 'papitas',     titulo: '🥔 Papitas (1 bolsa)', opciones: ['Sin papitas', 'Ruffles', 'Doritos rojos', 'Tostitos', 'Tostitos Flamin Hot'] },
+    { id: 'papitas',     titulo: '🥔 Papitas (1 bolsa)', opciones: ['Ruffles', 'Doritos rojos', 'Tostitos', 'Tostitos Flamin Hot'] },
     { id: 'mantequilla', titulo: '🧈 Mantequilla',       opciones: ['Con mantequilla', 'Sin mantequilla'] },
     { id: 'mayonesa',    titulo: '🥫 Mayonesa',          opciones: ['Con mayonesa', 'Sin mayonesa'] },
     { id: 'crema',       titulo: '🥛 Crema',             opciones: ['Con crema', 'Sin crema'] },
@@ -1058,8 +1234,7 @@ const opcionesPorCategoria = {
     { id: 'qamarillo', titulo: '🧀 Queso amarillo',   opciones: ['Con queso amarillo', 'Sin queso amarillo'] },
   ],
   raspa: [
-    { id: 'chamoy',   titulo: '🍑 Chamoy',          opciones: ['Con chamoy', 'Sin chamoy'] },
-    { id: 'chile',    titulo: '🌶️ Chile en polvo',  opciones: ['Con chile', 'Sin chile'] },
+    { id: 'sabores', tipo: 'multi', titulo: '🍧 Elige tus sabores', opciones: saboresRaspa },
   ],
   especialidad: [],
   obispo: [
@@ -1075,9 +1250,7 @@ const opcionesPorCategoria = {
     { id: 'qrayado',   titulo: '🧀 Queso rayado',   opciones: ['Con queso rayado', 'Sin queso rayado'] },
   ],
   crema: [
-    { id: 'mermelada',   titulo: '🍓 Mermelada',   opciones: ['Con mermelada', 'Sin mermelada'] },
-    { id: 'chocolate',   titulo: '🍫 Chocolate',   opciones: ['Con chocolate', 'Sin chocolate'] },
-    { id: 'chispas',     titulo: '✨ Chispas',      opciones: ['Con chispas', 'Sin chispas'] },
+    { id: 'sabores',     tipo: 'multi', titulo: '🍦 Elige tus sabores', opciones: saboresCrema },
   ],
 };
 
@@ -1107,6 +1280,31 @@ function abrirModalPersonalizacion(id) {
   grupos.forEach(grupo => {
     const div = document.createElement('div');
     div.className = 'opcion-grupo';
+
+    if (grupo.tipo === 'multi') {
+      // Grupo de selección múltiple (sabores), con límite según el producto
+      const max = prod.categoria === 'crema'
+        ? (MAX_SABORES_CREMA[prod.id] || 4)
+        : MAX_SABORES_RASPA;
+
+      modalSelecciones[grupo.id] = []; // arreglo de sabores elegidos
+
+      div.innerHTML = `
+        <div class="grupo-titulo-row">
+          <label class="grupo-titulo">${grupo.titulo}</label>
+          <span class="grupo-contador" id="contador-${grupo.id}">0/${max}</span>
+        </div>
+        <div class="opciones-chips" id="chips-${grupo.id}">
+          ${grupo.opciones.map(op => `
+            <button class="chip-opcion" data-grupo="${grupo.id}" data-valor="${op}"
+              onclick="toggleSaborChip(this, '${grupo.id}', '${op}', ${max})">
+              ${op}
+            </button>`).join('')}
+        </div>`;
+      body.appendChild(div);
+      return;
+    }
+
     div.innerHTML = `<label class="grupo-titulo">${grupo.titulo}</label>
       <div class="opciones-chips" id="chips-${grupo.id}">
         ${grupo.opciones.map(op => `
@@ -1147,6 +1345,40 @@ function seleccionarChip(el, grupoId, valor) {
   modalSelecciones[grupoId] = valor;
 }
 
+function toggleSaborChip(el, grupoId, valor, max) {
+  const seleccion = modalSelecciones[grupoId] || [];
+  const idx = seleccion.indexOf(valor);
+
+  if (idx >= 0) {
+    // Ya estaba elegido: lo quitamos
+    seleccion.splice(idx, 1);
+    el.classList.remove('seleccionado');
+  } else {
+    if (seleccion.length >= max) {
+      mostrarToast(`🍦 Máximo ${max} sabores para esta nieve`);
+      return;
+    }
+    seleccion.push(valor);
+    el.classList.add('seleccionado');
+  }
+  modalSelecciones[grupoId] = seleccion;
+
+  // Actualizar contador
+  const contador = document.getElementById(`contador-${grupoId}`);
+  if (contador) {
+    contador.textContent = `${seleccion.length}/${max}`;
+    contador.classList.toggle('completo', seleccion.length >= max);
+  }
+
+  // Deshabilitar visualmente los chips no elegidos cuando se llega al máximo
+  const lleno = seleccion.length >= max;
+  document.querySelectorAll(`[data-grupo="${grupoId}"]`).forEach(chip => {
+    if (!chip.classList.contains('seleccionado')) {
+      chip.classList.toggle('chip-deshabilitado', lleno);
+    }
+  });
+}
+
 function cerrarModal() {
   document.getElementById('modal-personal').classList.remove('abierto');
   document.body.style.overflow = '';
@@ -1160,10 +1392,30 @@ function cerrarModalSiOverlay(e) {
 function confirmarPersonalizacion() {
   if (modalProductoId === null) return;
   const prod = catalogo.find(p => p.id === modalProductoId);
+  const grupos = opcionesPorCategoria[prod.categoria] || [];
+
+  // Si el producto tiene grupo de sabores, exigir al menos uno elegido
+  const grupoSabores = grupos.find(g => g.tipo === 'multi');
+  if (grupoSabores) {
+    const elegidos = modalSelecciones[grupoSabores.id] || [];
+    if (elegidos.length === 0) {
+      mostrarToast('⚠️ Elige al menos un sabor');
+      return;
+    }
+  }
+
   const notas = document.getElementById('modal-notas').value.trim();
 
-  // Armar texto de personalización
-  const partes = Object.values(modalSelecciones);
+  // Armar texto de personalización (grupos normales + sabores)
+  const partes = [];
+  grupos.forEach(grupo => {
+    const valor = modalSelecciones[grupo.id];
+    if (grupo.tipo === 'multi') {
+      if (valor && valor.length) partes.push(`Sabores: ${valor.join(', ')}`);
+    } else if (valor) {
+      partes.push(valor);
+    }
+  });
   if (notas) partes.push(`Nota: ${notas}`);
   const personalizacion = partes.join(', ') || '';
 
@@ -1189,6 +1441,13 @@ function confirmarPersonalizacion() {
 // =============================================
 //  RENDER PRODUCTOS
 // =============================================
+function manejarErrorImagen(img, emoji) {
+  // Si la foto no carga (link roto, archivo no subido, etc.), regresamos al emoji
+  const contenedor = img.parentElement;
+  contenedor.classList.remove('con-imagen');
+  contenedor.textContent = emoji;
+}
+
 function renderProductos(lista) {
   const grid = document.getElementById('productos-grid');
   grid.innerHTML = '';
@@ -1197,8 +1456,11 @@ function renderProductos(lista) {
     const div = document.createElement('div');
     div.className = 'card';
     div.dataset.categoria = p.categoria;
+    const media = p.imagen
+      ? `<img class="card-img" src="${p.imagen}" alt="${p.nombre}" loading="lazy" onerror="manejarErrorImagen(this, '${p.emoji}')">`
+      : p.emoji;
     div.innerHTML = `
-      <div class="card-emoji">${p.emoji}</div>
+      <div class="card-emoji ${p.imagen ? 'con-imagen' : ''}">${media}</div>
       <div class="card-body">
         <span class="card-tag ${p.tag}">${p.tagLabel}</span>
         <h3>${p.nombre}</h3>
@@ -1318,7 +1580,7 @@ function eliminarDelCarrito(id) {
 }
 
 function totalItems() { return carrito.reduce((s, c) => s + c.cantidad, 0); }
-function totalPrecio() { return carrito.reduce((s, c) => s + c.precio * c.cantidad, 0); }
+function totalPrecio() { return carrito.reduce((s, c) => s + precioUnitario(c) * c.cantidad, 0); }
 
 // =============================================
 //  ACTUALIZAR TODA LA UI
@@ -1355,13 +1617,15 @@ function renderCarrito() {
       </div>`;
     return;
   }
-  contenedor.innerHTML = carrito.map(item => `
+  contenedor.innerHTML = carrito.map(item => {
+    const pUnit = precioUnitario(item);
+    return `
     <div class="item-carrito">
       <div class="item-emoji">${item.emoji}</div>
       <div class="item-info">
         <strong>${item.nombre}</strong>
         ${item.personalizacion ? `<span class="item-personal">✏️ ${item.personalizacion}</span>` : ''}
-        <span class="item-precio">$${item.precio} c/u · Subtotal: $${item.precio * item.cantidad}</span>
+        <span class="item-precio">$${pUnit} c/u · Subtotal: $${pUnit * item.cantidad}</span>
       </div>
       <div class="item-controles">
         <button class="btn-qty" onclick="cambiarCantidad(${item.id}, -1)">−</button>
@@ -1369,7 +1633,8 @@ function renderCarrito() {
         <button class="btn-qty" onclick="cambiarCantidad(${item.id}, +1)">+</button>
         <button class="btn-eliminar" onclick="eliminarDelCarrito(${item.id})" title="Eliminar">🗑</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 // =============================================
@@ -1407,27 +1672,67 @@ function hacerPedidoWhatsApp() {
     return;
   }
 
+  if (!tipoEntrega) {
+    const wrapper = document.getElementById('entrega-wrapper');
+    wrapper.classList.add('error');
+    setTimeout(() => wrapper.classList.remove('error'), 600);
+    mostrarToast('⚠️ Selecciona si es para domicilio o recoger');
+    return;
+  }
+
+  const direccion = document.getElementById('direccion-campo').value.trim();
+  if (tipoEntrega === 'domicilio' && !direccion) {
+    const campo = document.getElementById('direccion-campo');
+    const wrapper = document.getElementById('ubicacion-wrapper');
+    wrapper.classList.add('error');
+    campo.focus();
+    setTimeout(() => wrapper.classList.remove('error'), 600);
+    mostrarToast('⚠️ Escribe tu dirección para el domicilio');
+    return;
+  }
+
   const lineasProductos = carrito
     .map(item => {
-      const base = `*${item.nombre}* x${item.cantidad}\n   $${item.precio * item.cantidad}`;
+      const pUnit = precioUnitario(item);
+      const base = `${item.emoji} *${item.nombre}* x${item.cantidad}\n   $${pUnit * item.cantidad}`;
       return item.personalizacion ? `${base}\n   ${item.personalizacion}` : base;
     })
     .join('\n\n');
 
+  let entregaTexto = tipoEntrega === 'domicilio'
+    ? `🛵 *Entrega: A domicilio* (+$${RECARGO_DOMICILIO} por producto)\n🏠 Dirección: ${direccion}`
+    : `🏬 *Entrega: Recoger en tienda*`;
+
+  if (tipoEntrega === 'domicilio' && ubicacionLat && ubicacionLng) {
+    entregaTexto += `\n📍 Ubicación GPS: https://www.google.com/maps?q=${ubicacionLat},${ubicacionLng}`;
+  }
+
   const mensaje =
-    `━━━ *MI PEDIDO* ━━━\n` +
-    `*${nombre}*\n\n` +
+    `━━━ 🍦 *MI PEDIDO* ━━━\n` +
+    `👤 *${nombre}*\n` +
+    `${entregaTexto}\n\n` +
     `${lineasProductos}\n\n` +
     `━━━━━━━━━━━━━━━\n` +
-    `*Total: $${totalPrecio()}*\n` +
+    `💰 *Total: $${totalPrecio()}*\n` +
     `━━━━━━━━━━━━━━━`;
 
   const urlWhatsApp = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
   window.open(urlWhatsApp, '_blank');
 
-  // Vaciar carrito y limpiar nombre después de enviar
+  // Vaciar carrito y limpiar nombre/entrega/dirección después de enviar
   carrito = [];
+  tipoEntrega = null;
+  ubicacionLat = null;
+  ubicacionLng = null;
   document.getElementById('cliente-nombre').value = '';
+  document.getElementById('direccion-campo').value = '';
+  document.getElementById('entrega-domicilio').classList.remove('seleccionado');
+  document.getElementById('entrega-recoger').classList.remove('seleccionado');
+  document.getElementById('ubicacion-wrapper').classList.remove('visible');
+  const btnUbi = document.getElementById('btn-ubicacion');
+  btnUbi.textContent = '📡 Compartir mi ubicación GPS';
+  btnUbi.classList.remove('capturada');
+  document.getElementById('ubicacion-nota').textContent = 'Esto ayuda al repartidor a encontrarte más rápido y exacto. Es opcional, pero muy recomendable 🙌';
   // Resetear todos los botones de productos
   document.querySelectorAll('.btn-agregar').forEach(b => {
     b.textContent = '+ Agregar';
