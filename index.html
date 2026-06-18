@@ -1612,31 +1612,51 @@ function actualizarUI() {
 function renderCarrito() {
   const contenedor = document.getElementById('carrito-items');
   if (carrito.length === 0) {
-    contenedor.innerHTML = `
-      <div class="carrito-vacio">
-        <span class="emoji-vacio">🛒</span>
-        <p>Tu carrito está vacío.<br>¡Agrega algo delicioso!</p>
-      </div>`;
+    if (!contenedor.querySelector('.carrito-vacio')) {
+      contenedor.innerHTML = `
+        <div class="carrito-vacio">
+          <span class="emoji-vacio">🛒</span>
+          <p>Tu carrito está vacío.<br>¡Agrega algo delicioso!</p>
+        </div>`;
+    }
     return;
   }
-  contenedor.innerHTML = carrito.map(item => {
+  // Remove empty state if present
+  const vacio = contenedor.querySelector('.carrito-vacio');
+  if (vacio) vacio.remove();
+
+  // Update existing items and add new ones without destroying DOM
+  carrito.forEach(item => {
     const pUnit = precioUnitario(item);
-    return `
-    <div class="item-carrito">
-      <div class="item-emoji">${item.emoji}</div>
-      <div class="item-info">
-        <strong>${item.nombre}</strong>
-        ${item.personalizacion ? `<span class="item-personal">✏️ ${item.personalizacion}</span>` : ''}
-        <span class="item-precio">$${pUnit} c/u · Subtotal: $${pUnit * item.cantidad}</span>
-      </div>
-      <div class="item-controles">
-        <button class="btn-qty" onclick="cambiarCantidad(${item.id}, -1)">−</button>
-        <span class="item-qty">${item.cantidad}</span>
-        <button class="btn-qty" onclick="cambiarCantidad(${item.id}, +1)">+</button>
-        <button class="btn-eliminar" onclick="eliminarDelCarrito(${item.id})" title="Eliminar">🗑</button>
-      </div>
-    </div>`;
-  }).join('');
+    let div = contenedor.querySelector(`[data-id="${item.id}"]`);
+    if (!div) {
+      div = document.createElement('div');
+      div.className = 'item-carrito';
+      div.dataset.id = item.id;
+      div.innerHTML = `
+        <div class="item-emoji">${item.emoji}</div>
+        <div class="item-info">
+          <strong>${item.nombre}</strong>
+          ${item.personalizacion ? `<span class="item-personal">✏️ ${item.personalizacion}</span>` : ''}
+          <span class="item-precio"></span>
+        </div>
+        <div class="item-controles">
+          <button class="btn-qty" onclick="cambiarCantidad(${item.id}, -1)">−</button>
+          <span class="item-qty"></span>
+          <button class="btn-qty" onclick="cambiarCantidad(${item.id}, +1)">+</button>
+          <button class="btn-eliminar" onclick="eliminarDelCarrito(${item.id})" title="Eliminar">🗑</button>
+        </div>`;
+      contenedor.appendChild(div);
+    }
+    // Only update the parts that can change
+    div.querySelector('.item-precio').textContent = `$${pUnit} c/u · Subtotal: $${pUnit * item.cantidad}`;
+    div.querySelector('.item-qty').textContent = item.cantidad;
+  });
+
+  // Remove items no longer in cart
+  contenedor.querySelectorAll('[data-id]').forEach(div => {
+    if (!carrito.find(i => i.id == div.dataset.id)) div.remove();
+  });
 }
 
 // =============================================
