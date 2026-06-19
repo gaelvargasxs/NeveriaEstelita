@@ -86,6 +86,7 @@
     ============================================= */
     .loading-screen {
       position: fixed; inset: 0; z-index: 99999;
+      width: 100vw; height: 100vh; height: 100dvh;
       background: var(--crema);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 1.75rem;
@@ -805,7 +806,7 @@
       <a href="#nosotros">Nosotros</a>
       <a href="#contacto">Contacto</a>
       <button class="btn-carrito-nav" onclick="abrirCarrito()">
-        🛒 Carrito
+        <i class="ti ti-shopping-cart" aria-hidden="true"></i> Carrito
         <span class="carrito-badge" id="badge-nav">0</span>
       </button>
     </nav>
@@ -814,11 +815,11 @@
     </div>
   </div>
   <div class="mobile-menu" id="mobile-menu">
-    <a href="#menu"      onclick="toggleMenu()">🍦 Menú</a>
-    <a href="#nosotros"  onclick="toggleMenu()">💜 Nosotros</a>
-    <a href="#contacto"  onclick="toggleMenu()">📍 Contacto</a>
+    <a href="#menu"      onclick="toggleMenu()"><i class="ti ti-ice-cream-2" aria-hidden="true"></i> Menú</a>
+    <a href="#nosotros"  onclick="toggleMenu()"><i class="ti ti-heart" aria-hidden="true"></i> Nosotros</a>
+    <a href="#contacto"  onclick="toggleMenu()"><i class="ti ti-map-pin" aria-hidden="true"></i> Contacto</a>
     <button class="btn-carrito-nav" onclick="abrirCarrito(); toggleMenu()">
-      🛒 Ver carrito
+      <i class="ti ti-shopping-cart" aria-hidden="true"></i> Ver carrito
       <span class="carrito-badge" id="badge-mobile">0</span>
     </button>
   </div>
@@ -946,38 +947,38 @@
 <div class="carrito-overlay" id="carrito-overlay" onclick="cerrarCarrito()"></div>
 <aside class="carrito-panel" id="carrito-panel">
   <div class="carrito-header">
-    <h2>🛒 Tu Carrito</h2>
-    <button class="btn-cerrar" onclick="cerrarCarrito()">✕</button>
+    <h2><i class="ti ti-shopping-cart" aria-hidden="true"></i> Tu Carrito</h2>
+    <button class="btn-cerrar" onclick="cerrarCarrito()"><i class="ti ti-x" aria-hidden="true"></i></button>
   </div>
   <div class="carrito-items" id="carrito-items">
     <!-- ítems renderizados por JS -->
   </div>
   <div class="carrito-footer" style="overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; flex-shrink:0; max-height:60dvh; padding-bottom: env(safe-area-inset-bottom, 16px);">
-    <p style="font-size:.78rem; font-weight:800; color:var(--morado); margin-bottom:.4rem; letter-spacing:.03em;">👤 TU NOMBRE</p>
+    <p style="font-size:.78rem; font-weight:800; color:var(--morado); margin-bottom:.4rem; letter-spacing:.03em;"><i class="ti ti-user" aria-hidden="true"></i> TU NOMBRE</p>
     <div class="nombre-wrapper" id="nombre-wrapper">
       <div class="nombre-inner">
-        <span class="nombre-icon">🍦</span>
+        <span class="nombre-icon"><i class="ti ti-ice-cream-2" aria-hidden="true"></i></span>
         <input type="text" id="cliente-nombre" class="nombre-campo"
           placeholder="¿Para quién es el pedido?" maxlength="40" />
       </div>
     </div>
-    <p style="font-size:.78rem; font-weight:800; color:var(--morado); margin-bottom:.4rem; letter-spacing:.03em;">🚚 ENTREGA</p>
+    <p style="font-size:.78rem; font-weight:800; color:var(--morado); margin-bottom:.4rem; letter-spacing:.03em;"><i class="ti ti-truck-delivery" aria-hidden="true"></i> ENTREGA</p>
     <div class="entrega-wrapper" id="entrega-wrapper">
       <div class="entrega-opciones">
         <button type="button" class="entrega-btn" id="entrega-domicilio" onclick="seleccionarEntrega('domicilio')">
-          <span class="e-icon">🛵</span>
+          <span class="e-icon"><i class="ti ti-moped" aria-hidden="true"></i></span>
           A domicilio
           <span class="e-nota">+$5 c/u</span>
         </button>
         <button type="button" class="entrega-btn" id="entrega-recoger" onclick="seleccionarEntrega('recoger')">
-          <span class="e-icon">🏬</span>
+          <span class="e-icon"><i class="ti ti-building-store" aria-hidden="true"></i></span>
           Recoger ahí
           <span class="e-nota">Sin costo extra</span>
         </button>
       </div>
     </div>
     <div class="ubicacion-wrapper" id="ubicacion-wrapper">
-      <span class="ubicacion-label">📍 ¿A dónde te lo llevamos?</span>
+      <span class="ubicacion-label"><i class="ti ti-map-pin" aria-hidden="true"></i> ¿A dónde te lo llevamos?</span>
       <textarea class="direccion-campo" id="direccion-campo" rows="2"
         placeholder="Calle, número, colonia y alguna referencia (casa de qué color, entre qué calles, etc.)"
         maxlength="200"></textarea>
@@ -1264,6 +1265,7 @@ const opcionesPorCategoria = {
     { id: 'crema',     titulo: '🥛 Crema',          opciones: ['Con crema', 'Sin crema'] },
     { id: 'catsup',    titulo: '🍅 Catsup',          opciones: ['Con catsup', 'Sin catsup'] },
     { id: 'qrayado',   titulo: '🧀 Queso rayado',   opciones: ['Con queso rayado', 'Sin queso rayado'] },
+    { id: 'papitas',   titulo: '🥔 Papitas',        opciones: ['Ruffles', 'Doritos rojos', 'Chetos Flamin', 'Doritos Dinamita verde', 'Doritos Dinamita morado', 'Takis verde', 'Takis morado', 'Tostitos verde', 'Tostitos morado'] },
   ],
   tostiqueso_cueritos: [
     { id: 'elote',     titulo: '🌽 Elote',         opciones: ['Con elote', 'Sin elote'] },
@@ -1272,6 +1274,7 @@ const opcionesPorCategoria = {
     { id: 'catsup',    titulo: '🍅 Catsup',          opciones: ['Con catsup', 'Sin catsup'] },
     { id: 'qrayado',   titulo: '🧀 Queso rayado',   opciones: ['Con queso rayado', 'Sin queso rayado'] },
     { id: 'cueritos',  titulo: '🫙 Cueritos',        opciones: ['Con cueritos', 'Sin cueritos'] },
+    { id: 'papitas',   titulo: '🥔 Papitas',        opciones: ['Ruffles', 'Doritos rojos', 'Chetos Flamin', 'Doritos Dinamita verde', 'Doritos Dinamita morado', 'Takis verde', 'Takis morado', 'Tostitos verde', 'Tostitos morado'] },
   ],
   tostipepino: [
     { id: 'pepino',    titulo: '🥒 Pepino',               opciones: ['Con pepino', 'Sin pepino'] },
@@ -1280,6 +1283,7 @@ const opcionesPorCategoria = {
     { id: 'tamarindo', titulo: '🍬 Dulce de tamarindo',   opciones: ['Con tamarindo', 'Sin tamarindo'] },
     { id: 'magui',     titulo: '🧂 Salsa magui',          opciones: ['Con salsa magui', 'Sin salsa magui'] },
     { id: 'chamoy',    titulo: '🍑 Chamoy',               opciones: ['Con chamoy', 'Sin chamoy'] },
+    { id: 'papitas',   titulo: '🥔 Papitas',              opciones: ['Ruffles', 'Doritos rojos', 'Chetos Flamin', 'Doritos Dinamita verde', 'Doritos Dinamita morado', 'Takis verde', 'Takis morado', 'Tostitos verde', 'Tostitos morado'] },
   ],
   tostiverdura: [
     { id: 'repollo',   titulo: '🥬 Repollo',   opciones: ['Con repollo', 'Sin repollo'] },
@@ -1287,6 +1291,7 @@ const opcionesPorCategoria = {
     { id: 'aguacate',  titulo: '🥑 Aguacate',   opciones: ['Con aguacate', 'Sin aguacate'] },
     { id: 'cueritos',  titulo: '🫙 Cueritos',   opciones: ['Con cueritos', 'Sin cueritos'] },
     { id: 'crema',     titulo: '🥛 Crema',      opciones: ['Con crema', 'Sin crema'] },
+    { id: 'papitas',   titulo: '🥔 Papitas',    opciones: ['Ruffles', 'Doritos rojos', 'Chetos Flamin', 'Doritos Dinamita verde', 'Doritos Dinamita morado', 'Takis verde', 'Takis morado', 'Tostitos verde', 'Tostitos morado'] },
   ],
   tostiverdura_eq: [
     { id: 'repollo',   titulo: '🥬 Repollo',         opciones: ['Con repollo', 'Sin repollo'] },
@@ -1296,6 +1301,7 @@ const opcionesPorCategoria = {
     { id: 'crema',     titulo: '🥛 Crema',            opciones: ['Con crema', 'Sin crema'] },
     { id: 'elote',     titulo: '🌽 Elote',            opciones: ['Con elote', 'Sin elote'] },
     { id: 'qamarillo', titulo: '🧀 Queso amarillo',   opciones: ['Con queso amarillo', 'Sin queso amarillo'] },
+    { id: 'papitas',   titulo: '🥔 Papitas',          opciones: ['Ruffles', 'Doritos rojos', 'Chetos Flamin', 'Doritos Dinamita verde', 'Doritos Dinamita morado', 'Takis verde', 'Takis morado', 'Tostitos verde', 'Tostitos morado'] },
   ],
   raspa: [
     { id: 'sabores', tipo: 'multi', titulo: '🍧 Elige tus sabores', opciones: saboresRaspa },
@@ -1506,11 +1512,11 @@ function confirmarPersonalizacion() {
 // =============================================
 const ICONO_PRODUCTO = `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--morado)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4"><path d="M12 2a5 5 0 0 1 5 5c0 2.5-1.5 4.5-3.5 5.4V20a1.5 1.5 0 0 1-3 0v-7.6C8.5 11.5 7 9.5 7 7a5 5 0 0 1 5-5z"/></svg>`;
 
-function manejarErrorImagen(img) {
-  // Si la foto no carga, mostramos el icono genérico
+function manejarErrorImagen(img, emoji) {
+  // Si la foto no carga, mostramos el emoji propio del producto
   const contenedor = img.parentElement;
   contenedor.classList.remove('con-imagen');
-  contenedor.innerHTML = ICONO_PRODUCTO;
+  contenedor.innerHTML = emoji ? `<span class="emoji-real">${emoji}</span>` : ICONO_PRODUCTO;
 }
 
 function renderProductos(lista) {
@@ -1522,8 +1528,8 @@ function renderProductos(lista) {
     div.className = 'card';
     div.dataset.categoria = p.categoria;
     const media = p.imagen
-      ? `<img class="card-img" src="${p.imagen}" alt="${p.nombre}" loading="lazy" onerror="manejarErrorImagen(this)">`
-      : ICONO_PRODUCTO;
+      ? `<img class="card-img" src="${p.imagen}" alt="${p.nombre}" loading="lazy" onerror="manejarErrorImagen(this, '${p.emoji}')">`
+      : `<span class="emoji-real">${p.emoji}</span>`;
     div.innerHTML = `
       <div class="card-emoji ${p.imagen ? 'con-imagen' : ''}">${media}</div>
       <div class="card-body">
@@ -1867,7 +1873,7 @@ window.addEventListener('load', () => {
     pantalla.classList.add('oculto');
     document.body.style.overflow = '';
     setTimeout(() => pantalla.remove(), 600);
-  }, 500);
+  }, 1800);
 });
 
 // =============================================
